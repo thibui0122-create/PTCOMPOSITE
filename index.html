@@ -15,8 +15,8 @@
         .table-custom { width: 100%; border-collapse: collapse; border: 1px solid black; }
         .table-custom th, .table-custom td { border: 1px solid black !important; padding: 7px 8px; font-size: 13px; color: black; }
         
-        /* MÀU NỀN XANH NHẠT CHUẨN MẪU (KHÔNG VIẾT HOA TẤT CẢ CHỮ) */
-        .table-custom th { background-color: #e6f2ff !important; font-weight: bold; text-transform: none; }
+        /* MÀU NỀN XANH NHẠT CHUẨN MẪU TỪ ẢNH CỦA ANH */
+        .table-custom th { background-color: #e6f0fa !important; font-weight: bold; text-transform: none; text-align: center; }
         
         .input-clean { border: none; border-bottom: 1px solid #e2e8f0; outline: none; width: 100%; padding: 4px; background: transparent; }
         .input-clean:focus { border-bottom: 2px solid #2563eb; }
@@ -66,9 +66,14 @@
     </div>
 
     <div id="preview-mode" class="hidden bg-slate-300 py-10 min-h-screen">
-        <div class="max-w-[210mm] mx-auto mb-8 flex gap-4 px-4">
-            <button onclick="exportNativePDF()" class="w-full bg-red-600 hover:bg-red-700 text-white py-4 rounded-2xl font-black uppercase shadow-xl transition-all active:scale-95 text-lg tracking-widest">
-                <i class="fa-solid fa-download mr-2"></i> TẢI THẲNG PDF VỀ MÁY
+        <div class="max-w-[210mm] mx-auto mb-8 flex flex-col gap-3 px-4">
+            <div id="zalo-warning" class="hidden bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded shadow-md text-sm font-bold">
+                <i class="fa-solid fa-triangle-exclamation mr-1"></i> LƯU Ý QUAN TRỌNG:<br>
+                Zalo chặn tải file trên điện thoại. Hãy bấm vào <b>dấu 3 chấm (...) góc màn hình</b> -> Chọn <b>"Mở bằng Safari / Chrome"</b> thì mới ấn tải file PDF được anh nhé!
+            </div>
+
+            <button onclick="exportNativePDF()" class="w-full bg-red-600 hover:bg-red-700 text-white py-4 rounded-2xl font-black uppercase shadow-xl transition-all active:scale-95 text-lg tracking-widest flex items-center justify-center">
+                <i class="fa-solid fa-download mr-3"></i> TẢI THẲNG PDF VỀ MÁY
             </button>
         </div>
         <div id="preview-a4" class="a4-page mx-auto shadow-2xl">
@@ -110,25 +115,34 @@
             { n: "Công thợ thay nhớt/bảo trì", u: "Công", p: 1200000 }
         ];
 
-        let savedConfig = JSON.parse(localStorage.getItem('pt_config')) || {};
-        let config = {
-            name: savedConfig.name || "CÔNG TY TNHH MTV PHƯƠNG THANH COMPOSITE",
-            tax: savedConfig.tax || "1702233007",
-            addr: savedConfig.addr || "506A, Ấp Tân Phước, Xã Châu Thành, Tỉnh An Giang",
-            branch: savedConfig.branch || "Đường Nguyễn Văn Cừ, Tổ 6, Khu Phố 4, Đặc Khu Phú Quốc, Tỉnh An Giang",
-            phone: savedConfig.phone || "0949.878.208 - 0942.959.263",
-            email: savedConfig.email || "phuongthanhcomposite@gmail.com",
-            bank: savedConfig.bank || "Ngân hàng MB - Ngân hàng Quân đội, chi nhánh Rạch Giá, An Giang",
-            stk: savedConfig.stk || "242666686868",
-            director: savedConfig.director || "BÙI NHỰT PHƯƠNG",
-            vat: savedConfig.vat !== undefined ? savedConfig.vat : 8
-        };
+        let config = {};
+        try {
+            let savedConfig = JSON.parse(localStorage.getItem('pt_config')) || {};
+            config = {
+                name: savedConfig.name || "CÔNG TY TNHH MTV PHƯƠNG THANH COMPOSITE",
+                tax: savedConfig.tax || "1702233007",
+                addr: savedConfig.addr || "506A, Ấp Tân Phước, Xã Châu Thành, Tỉnh An Giang",
+                branch: savedConfig.branch || "Đường Nguyễn Văn Cừ, Tổ 6, Khu Phố 4, Đặc Khu Phú Quốc, Tỉnh An Giang",
+                phone: savedConfig.phone || "0949.878.208 - 0942.959.263",
+                email: savedConfig.email || "phuongthanhcomposite@gmail.com",
+                bank: savedConfig.bank || "Ngân hàng MB - Ngân hàng Quân đội, chi nhánh Rạch Giá, An Giang",
+                stk: savedConfig.stk || "242666686868",
+                director: savedConfig.director || "BÙI NHỰT PHƯƠNG",
+                vat: savedConfig.vat !== undefined ? savedConfig.vat : 10
+            };
+        } catch(e) { console.error("Lỗi config"); }
+        
         let logoBase64 = localStorage.getItem('pt_logo_64') || "";
         let items = [{ id: 1, name: "Nhớt 4 thì - can 4 lít", unit: "Can", qty: 4, price: 700000 }];
 
         window.onload = () => {
             document.getElementById('quote-date').value = new Date().toISOString().split('T')[0];
             renderItems(); calculateAll();
+            
+            // CẢNH BÁO MẠNH NẾU ĐANG Ở TRONG ZALO (NGUYÊN NHÂN GÂY LỖI)
+            if (/Zalo/i.test(navigator.userAgent)) {
+                document.getElementById('zalo-warning').classList.remove('hidden');
+            }
         };
 
         function renderItems() {
@@ -219,7 +233,14 @@
                 <div style="margin-bottom:15px;">
                     <h3 style="color:#003399; font-weight:bold; margin-bottom:5px; font-size:13px; text-transform:uppercase;">II. CHI TIẾT BÁO GIÁ</h3>
                     <table class="table-custom">
-                        <thead><tr><th style="width:40px; text-align:center;">STT</th><th style="text-align:left;">Tên hàng hóa / Quy cách</th><th style="width:60px; text-align:center;">ĐVT</th><th style="width:50px; text-align:center;">SL</th><th style="width:100px; text-align:right;">Đơn giá</th><th style="width:110px; text-align:right;">Thành tiền</th></tr></thead>
+                        <thead><tr>
+                            <th style="width:40px; text-align:center;">STT</th>
+                            <th style="text-align:left;">Tên hàng hóa / Quy cách</th>
+                            <th style="width:60px; text-align:center;">ĐVT</th>
+                            <th style="width:50px; text-align:center;">SL</th>
+                            <th style="width:100px; text-align:right;">Đơn giá</th>
+                            <th style="width:110px; text-align:right;">Thành tiền</th>
+                        </tr></thead>
                         <tbody>
                             ${items.map((it, idx) => `<tr><td style="text-align:center;">${idx+1}</td><td style="font-weight:bold;">${it.name}</td><td style="text-align:center;">${it.unit}</td><td style="text-align:center; font-weight:bold;">${it.qty}</td><td style="text-align:right;">${it.price.toLocaleString('vi-VN')}</td><td style="text-align:right; font-weight:bold; color:#003399;">${(it.qty*it.price).toLocaleString('vi-VN')}</td></tr>`).join('')}
                         </tbody>
@@ -248,7 +269,6 @@
                         <p style="font-style:italic; font-size:13px;">${dStr}</p>
                         <p style="color:#003399; font-weight:900; font-size:16px; margin:5px 0 70px 0;">GIÁM ĐỐC</p>
                         <p style="font-weight:bold; text-transform:uppercase; font-size:14px; border-top:1px solid #333; padding-top:5px; display:inline-block; min-width:180px;">${config.director}</p>
-                        <p style="font-style:italic; font-size:11px; color:#666; margin-top:3px;">(Ký và đóng dấu)</p>
                     </div>
                 </div>
                 
@@ -256,11 +276,11 @@
             `;
         }
 
+        // --- HÀM TẢI FILE TRỰC TIẾP (CHUẨN 100% CHO IOS & ANDROID) ---
         function exportNativePDF() {
-            // HỆ THỐNG CẢM BIẾN CHẶN ZALO BẢO VỆ NGƯỜI DÙNG ĐIỆN THOẠI
-            const ua = navigator.userAgent || navigator.vendor || window.opera;
-            if (ua.indexOf("Zalo") > -1 || ua.indexOf("FBAV") > -1) {
-                alert("⛔ LỖI BẢO MẬT TỪ ZALO:\n\nAnh đang mở báo giá trong ứng dụng Zalo. Zalo đã khóa tính năng tải file PDF.\n\n👉 CÁCH GIẢI QUYẾT:\n1. Nhìn lên góc trên cùng bên phải (hoặc dưới cùng) màn hình có dấu 3 chấm (⠇) hoặc (⋯)\n2. Bấm vào đó và chọn 'Mở bằng Safari' hoặc 'Mở bằng Trình duyệt'.\n3. Trình duyệt mở ra, anh bấm lại nút TẢI là file về máy ngay lập tức ạ!");
+            // Chặn tải trên Zalo để tránh lỗi "Không tìm thấy ứng dụng"
+            if (/Zalo|FBAV/i.test(navigator.userAgent)) {
+                alert("⛔ BẠN ĐANG Ở TRONG ZALO!\n\nZalo KHÔNG CHO PHÉP tải file PDF về điện thoại.\n\n👉 Anh vui lòng bấm vào nút [ ⋯ ] ở góc màn hình rồi chọn 'Mở bằng Safari' hoặc 'Mở bằng Chrome' để tải nhé!");
                 return;
             }
 
@@ -371,26 +391,26 @@
                         },
                         { text: 'Xin chân thành cảm ơn Quý khách hàng!', italics: true, fontSize: 10, alignment: 'center', margin: [0, 40, 0, 0] }
                     ],
-                    // FIX MÀU PDF XANH NHẠT #e6f0fa
+                    // FIX MÀU XANH NHẠT CHUẨN TRONG FILE PDF XUẤT RA
                     styles: { tableHeader: { bold: true, fontSize: 11, color: 'black', fillColor: '#e6f0fa', alignment: 'center', margin: [0, 5] } },
                     defaultStyle: { font: 'Roboto' }
                 };
 
-                let rawName = document.getElementById('cust-name').value || "PhuongThanh";
-                let safeName = rawName.replace(/[^a-zA-Z0-9]/g, "_");
+                let rawName = document.getElementById('cust-name').value || "KhachHang";
+                let safeName = rawName.replace(/[^a-zA-Z0-9\s]/g, "").replace(/\s+/g, "_");
                 
-                // Lệnh Tải PDF Trực Tiếp - Chuẩn nhất cho PC & Web Điện Thoại
+                // Lệnh thuần túy duy nhất để tải file trên Chrome, Safari, PC.
                 pdfMake.createPdf(docDefinition).download(`BaoGia_${safeName}.pdf`);
                 
-                // Hiển thị thông báo vị trí lưu file cho điện thoại
-                if (/Mobi|Android|iPhone/i.test(ua)) {
+                // Cảnh báo cho điện thoại biết vị trí lưu
+                if (/Android|iPhone|iPad/i.test(navigator.userAgent)) {
                     setTimeout(() => {
-                        alert("✅ Đã bắt đầu tải file PDF xuống máy!\n\n- Trên iPhone: File nằm trong ứng dụng 'Tệp' (Files).\n- Trên Android: File nằm trong mục 'Tải xuống' (Downloads).");
+                        alert("✅ Đã phát lệnh tải file xuống máy!\n\n- Trên iPhone: Vào ứng dụng 'Tệp' (Files) để lấy.\n- Trên Android: Vào mục 'Tải xuống' (Downloads).");
                     }, 1000);
                 }
 
             } catch (err) {
-                alert("Lỗi tải file. Xin vui lòng thử mở bằng trình duyệt Safari hoặc Chrome.");
+                alert("Đã xảy ra lỗi: " + err.message);
             }
         }
 
@@ -400,18 +420,9 @@
             reader.onload = (e) => { logoBase64 = e.target.result; localStorage.setItem('pt_logo_64', logoBase64); };
             if(file) reader.readAsDataURL(file);
         }
-
-        function showSettings() {
-            ['name','tax','addr','branch','phone','email','bank','stk','vat','director'].forEach(k => { document.getElementById('set-'+k).value = config[k]; });
-            document.getElementById('modal-settings').classList.remove('hidden');
-        }
+        function showSettings() { ['name','tax','addr','branch','phone','email','bank','stk','vat','director'].forEach(k => { document.getElementById('set-'+k).value = config[k]; }); document.getElementById('modal-settings').classList.remove('hidden'); }
         function closeSettings() { document.getElementById('modal-settings').classList.add('hidden'); }
-        function saveSettings() {
-            ['name','tax','addr','branch','phone','email','bank','stk','vat','director'].forEach(k => { config[k] = document.getElementById('set-'+k).value; });
-            localStorage.setItem('pt_config', JSON.stringify(config));
-            closeSettings(); calculateAll();
-        }
-
+        function saveSettings() { ['name','tax','addr','branch','phone','email','bank','stk','vat','director'].forEach(k => { config[k] = document.getElementById('set-'+k).value; }); localStorage.setItem('pt_config', JSON.stringify(config)); closeSettings(); calculateAll(); }
         function addItem() { items.push({ id: Date.now(), name: "", unit: "Cái", qty: 1, price: 0 }); renderItems(); calculateAll(); }
         function removeItem(id) { if(items.length > 1) { items = items.filter(i => i.id !== id); renderItems(); calculateAll(); } }
         function updateItem(id, f, v) { const i = items.find(x => x.id === id); if(i) { i[f] = f === 'qty' ? (parseFloat(v)||0) : v; calculateAll(); } }
