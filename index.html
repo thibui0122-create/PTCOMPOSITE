@@ -13,8 +13,11 @@
         body { font-family: 'Roboto', sans-serif; background-color: #f1f5f9; margin: 0; padding: 0; }
         .a4-page { width: 210mm; min-height: 296mm; padding: 12mm 15mm; margin: 20px auto; background: white; box-shadow: 0 0 20px rgba(0,0,0,0.15); color: black; }
         .table-custom { width: 100%; border-collapse: collapse; border: 1px solid black; }
-        .table-custom th, .table-custom td { border: 1px solid black !important; padding: 7px 8px; font-size: 13px; color: black; }
-        .table-custom th { background-color: #f1f5f9 !important; font-weight: bold; text-transform: uppercase; }
+        .table-custom th, .table-custom td { border: 1px solid black !important; padding: 8px 10px; font-size: 13px; color: black; }
+        
+        /* ĐỔI MÀU NỀN TIÊU ĐỀ BẢNG THÀNH XANH NHẠT NHƯ ẢNH */
+        .table-custom th { background-color: #e6f2ff !important; font-weight: bold; }
+        
         .input-clean { border: none; border-bottom: 1px solid #e2e8f0; outline: none; width: 100%; padding: 4px; background: transparent; }
         .input-clean:focus { border-bottom: 2px solid #2563eb; }
     </style>
@@ -64,8 +67,9 @@
 
     <div id="preview-mode" class="hidden bg-slate-300 py-10 min-h-screen">
         <div class="max-w-[210mm] mx-auto mb-8 flex gap-4 px-4">
-            <button onclick="exportNativePDF()" class="w-full bg-red-600 hover:bg-red-700 text-white py-4 rounded-2xl font-black uppercase shadow-xl transition-all active:scale-95 text-lg tracking-widest">
-                <i class="fa-solid fa-download mr-2"></i> TẢI THẲNG PDF VỀ MÁY
+            <button onclick="exportNativePDF()" id="btn-download-pdf" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-4 rounded-2xl font-black uppercase shadow-xl transition-all active:scale-95 text-lg tracking-widest flex flex-col items-center justify-center">
+                <span><i class="fa-solid fa-download mr-2"></i> XUẤT FILE PDF</span>
+                <span class="text-[10px] font-normal opacity-80 mt-1" id="btn-helper-text">(Tải về máy tính)</span>
             </button>
         </div>
         <div id="preview-a4" class="a4-page mx-auto shadow-2xl">
@@ -82,9 +86,9 @@
                 <input type="text" id="set-name" placeholder="Tên Công Ty" class="w-full border p-2.5 rounded shadow-sm">
                 <input type="text" id="set-tax" placeholder="Mã số thuế" class="w-full border p-2.5 rounded shadow-sm">
                 <input type="text" id="set-addr" placeholder="Trụ sở chính" class="w-full border p-2.5 rounded shadow-sm">
-                <input type="text" id="set-branch" placeholder="Chi nhánh" class="w-full border p-2.5 rounded shadow-sm text-blue-700">
+                <input type="text" id="set-branch" placeholder="Chi nhánh (Nếu không có thì để trống)" class="w-full border p-2.5 rounded shadow-sm text-blue-700">
                 <input type="text" id="set-phone" placeholder="Số điện thoại" class="w-full border p-2.5 rounded shadow-sm">
-                <input type="text" id="set-email" placeholder="Email" class="w-full border p-2.5 rounded shadow-sm">
+                <input type="text" id="set-email" placeholder="Email (Nếu không có thì để trống)" class="w-full border p-2.5 rounded shadow-sm">
                 <textarea id="set-bank" placeholder="Ngân hàng" rows="2" class="w-full border p-2.5 rounded shadow-sm"></textarea>
                 <input type="text" id="set-stk" placeholder="Số tài khoản" class="w-full border p-2.5 rounded shadow-sm font-black text-blue-700">
                 <input type="number" id="set-vat" placeholder="Thuế VAT (%)" class="w-full border p-2.5 rounded shadow-sm">
@@ -126,6 +130,11 @@
         window.onload = () => {
             document.getElementById('quote-date').value = new Date().toISOString().split('T')[0];
             renderItems(); calculateAll();
+            
+            // Cập nhật gợi ý nút bấm tùy theo điện thoại hay máy tính
+            if (navigator.canShare) {
+                document.getElementById('btn-helper-text').innerText = "(Chia sẻ trực tiếp qua Zalo / Lưu vào Tệp)";
+            }
         };
 
         function renderItems() {
@@ -153,6 +162,7 @@
             document.getElementById('sum-words').innerText = "(Bằng chữ: " + docTien(total) + ")";
         }
 
+        // HÀM ĐỌC SỐ CHUẨN ĐÃ FIX LỖI "KHÔNG TRĂM LINH"
         function docTien(so) {
             if (so === 0) return "Không đồng";
             const chuSo = ["không", "một", "hai", "ba", "bốn", "năm", "sáu", "bảy", "tám", "chín"];
@@ -166,7 +176,11 @@
                 return s;
             }
             let res = "", i = 0, temp = Math.abs(so);
-            do { let lop = temp % 1000; if (lop > 0) { let s = doc3(lop, temp < 1000); res = s + hang[i] + " " + res; } temp = Math.floor(temp / 1000); i++; } while (temp > 0);
+            do { 
+                let lop = temp % 1000; 
+                if (lop > 0) { let s = doc3(lop, temp < 1000); res = s + hang[i] + " " + res; } 
+                temp = Math.floor(temp / 1000); i++; 
+            } while (temp > 0);
             return res.trim().replace(/\s+/g, ' ').charAt(0).toUpperCase() + res.trim().replace(/\s+/g, ' ').slice(1) + " đồng chẵn.";
         }
 
@@ -180,6 +194,7 @@
             window.scrollTo(0,0);
         }
 
+        // CẬP NHẬT MÀU NỀN XANH CHO BẢNG PREVIEW
         function syncPreview() {
             const d = new Date(document.getElementById('quote-date').value);
             const dStr = `Ngày ${d.getDate()} tháng ${d.getMonth()+1} năm ${d.getFullYear()}`;
@@ -216,7 +231,14 @@
                 <div style="margin-bottom:15px;">
                     <h3 style="color:#003399; font-weight:bold; margin-bottom:5px; font-size:13px; text-transform:uppercase;">II. CHI TIẾT BÁO GIÁ</h3>
                     <table class="table-custom">
-                        <thead><tr><th style="width:40px; text-align:center;">STT</th><th style="text-align:left;">Tên hàng hóa / Quy cách</th><th style="width:60px; text-align:center;">ĐVT</th><th style="width:50px; text-align:center;">SL</th><th style="width:100px; text-align:right;">Đơn giá</th><th style="width:110px; text-align:right;">Thành tiền</th></tr></thead>
+                        <thead><tr>
+                            <th style="width:40px; text-align:center;">STT</th>
+                            <th style="text-align:left;">Tên hàng hóa / Quy cách</th>
+                            <th style="width:60px; text-align:center;">ĐVT</th>
+                            <th style="width:50px; text-align:center;">SL</th>
+                            <th style="width:100px; text-align:right;">Đơn giá</th>
+                            <th style="width:110px; text-align:right;">Thành tiền</th>
+                        </tr></thead>
                         <tbody>
                             ${items.map((it, idx) => `<tr><td style="text-align:center;">${idx+1}</td><td style="font-weight:bold;">${it.name}</td><td style="text-align:center;">${it.unit}</td><td style="text-align:center; font-weight:bold;">${it.qty}</td><td style="text-align:right;">${it.price.toLocaleString('vi-VN')}</td><td style="text-align:right; font-weight:bold; color:#003399;">${(it.qty*it.price).toLocaleString('vi-VN')}</td></tr>`).join('')}
                         </tbody>
@@ -239,13 +261,12 @@
                         <p style="font-weight:bold; font-style:italic; margin-top:15px; font-size:15px;">Thông tin chuyển khoản:</p>
                         <p style="margin:2px 0;">${config.bank}</p>
                         <p style="margin:2px 0;"><strong>Đơn vị thụ hưởng:</strong> <span style="text-transform:uppercase;">${config.name}</span></p>
-                        <p style="margin:2px 0; color:#003399; font-size:16px;">STK: ${config.stk}</p>
+                        <p style="margin:2px 0; color:#003399; font-size:16px; font-weight:bold;">STK: ${config.stk}</p>
                     </div>
                     <div style="text-align:center; width:35%;">
                         <p style="font-style:italic; font-size:13px;">${dStr}</p>
                         <p style="color:#003399; font-weight:900; font-size:16px; margin:5px 0 70px 0;">GIÁM ĐỐC</p>
                         <p style="font-weight:bold; text-transform:uppercase; font-size:14px; border-top:1px solid #333; padding-top:5px; display:inline-block; min-width:180px;">${config.director}</p>
-                        <p style="font-style:italic; font-size:11px; color:#666; margin-top:3px;">(Ký và đóng dấu)</p>
                     </div>
                 </div>
                 
@@ -253,7 +274,7 @@
             `;
         }
 
-        // HÀM XUẤT NATIVE PDF TRỰC TIẾP KHÔNG QUA PRINT
+        // HÀM XUẤT PDF - HOẠT ĐỘNG CHUẨN CHO CẢ MÁY TÍNH LẪN ĐIỆN THOẠI (iOS / Android)
         function exportNativePDF() {
             const d = new Date(document.getElementById('quote-date').value);
             const dStr = `Ngày ${d.getDate()} tháng ${d.getMonth()+1} năm ${d.getFullYear()}`;
@@ -262,11 +283,11 @@
             let tableBody = [
                 [
                     { text: 'STT', style: 'tableHeader' },
-                    { text: 'TÊN HÀNG HÓA / QUY CÁCH', style: 'tableHeader', alignment: 'left' },
+                    { text: 'Tên hàng hóa / Quy cách', style: 'tableHeader', alignment: 'left' },
                     { text: 'ĐVT', style: 'tableHeader' },
                     { text: 'SL', style: 'tableHeader' },
-                    { text: 'ĐƠN GIÁ', style: 'tableHeader', alignment: 'right' },
-                    { text: 'THÀNH TIỀN', style: 'tableHeader', alignment: 'right' }
+                    { text: 'Đơn giá', style: 'tableHeader', alignment: 'right' },
+                    { text: 'Thành tiền', style: 'tableHeader', alignment: 'right' }
                 ]
             ];
 
@@ -361,14 +382,35 @@
                     },
                     { text: 'Xin chân thành cảm ơn Quý khách hàng!', italics: true, fontSize: 10, alignment: 'center', margin: [0, 40, 0, 0] }
                 ],
-                styles: { tableHeader: { bold: true, fontSize: 11, color: 'black', fillColor: '#f1f5f9', alignment: 'center', margin: [0, 5] } },
+                // CẬP NHẬT MÀU NỀN XANH NHẠT CHO BẢN XUẤT PDF (#e6f2ff)
+                styles: { tableHeader: { bold: true, fontSize: 11, color: 'black', fillColor: '#e6f2ff', alignment: 'center', margin: [0, 5] } },
                 defaultStyle: { font: 'Roboto' }
             };
 
-            // LỆNH DUY NHẤT TẢI FILE PDF (KHÔNG HIỆN BẢNG IN)
+            // THUẬT TOÁN XUẤT PDF DÀNH CHO CẢ MÁY TÍNH VÀ ĐIỆN THOẠI
             let rawName = document.getElementById('cust-name').value || "PhuongThanh";
             let safeName = rawName.replace(/[^a-zA-Z0-9]/g, "_");
-            pdfMake.createPdf(docDefinition).download(`BaoGia_${safeName}.pdf`);
+            const fileName = `BaoGia_${safeName}.pdf`;
+            
+            const pdfDocGenerator = pdfMake.createPdf(docDefinition);
+
+            // Kiểm tra xem trình duyệt có tính năng "Chia sẻ" (Share) không - thường là điện thoại iOS/Android
+            if (navigator.canShare) {
+                pdfDocGenerator.getBlob((blob) => {
+                    const file = new File([blob], fileName, { type: 'application/pdf' });
+                    // Mở bảng Share của iPhone/Android để khách chọn gửi Zalo hoặc Lưu vào Tệp
+                    navigator.share({
+                        files: [file],
+                        title: 'Báo Giá - ' + rawName,
+                    }).catch((error) => {
+                        // Nếu khách hủy share, thì ép tải xuống
+                        pdfDocGenerator.download(fileName);
+                    });
+                });
+            } else {
+                // Máy tính thì tải thẳng về thư mục Download
+                pdfDocGenerator.download(fileName);
+            }
         }
 
         function uploadLogo(input) {
