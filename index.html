@@ -14,10 +14,7 @@
         .a4-page { width: 210mm; min-height: 296mm; padding: 12mm 15mm; margin: 20px auto; background: white; box-shadow: 0 0 20px rgba(0,0,0,0.15); color: black; }
         .table-custom { width: 100%; border-collapse: collapse; border: 1px solid black; }
         .table-custom th, .table-custom td { border: 1px solid black !important; padding: 7px 8px; font-size: 13px; color: black; }
-        
-        /* MÀU NỀN XANH NHẠT CHUẨN MẪU (KHÔNG VIẾT HOA TẤT CẢ CHỮ) */
         .table-custom th { background-color: #e6f0fa !important; font-weight: bold; text-transform: none; text-align: center; }
-        
         .input-clean { border: none; border-bottom: 1px solid #e2e8f0; outline: none; width: 100%; padding: 4px; background: transparent; }
         .input-clean:focus { border-bottom: 2px solid #2563eb; }
     </style>
@@ -139,7 +136,6 @@
             document.getElementById('quote-date').value = new Date().toISOString().split('T')[0];
             renderItems(); calculateAll();
             
-            // CẢNH BÁO NẾU ĐANG Ở TRONG ZALO
             if (/Zalo/i.test(navigator.userAgent)) {
                 document.getElementById('zalo-warning').classList.remove('hidden');
             }
@@ -276,7 +272,6 @@
             `;
         }
 
-        // HÀM XUẤT NATIVE PDF TRỰC TIẾP (BỎ ALERT)
         function exportNativePDF() {
             try {
                 const d = new Date(document.getElementById('quote-date').value);
@@ -385,7 +380,6 @@
                         },
                         { text: 'Xin chân thành cảm ơn Quý khách hàng!', italics: true, fontSize: 10, alignment: 'center', margin: [0, 40, 0, 0] }
                     ],
-                    // MÀU NỀN XANH NHẠT CHO BẢNG TRONG PDF
                     styles: { tableHeader: { bold: true, fontSize: 11, color: 'black', fillColor: '#e6f0fa', alignment: 'center', margin: [0, 5] } },
                     defaultStyle: { font: 'Roboto' }
                 };
@@ -394,10 +388,21 @@
                 let safeName = rawName.replace(/[^a-zA-Z0-9\s]/g, "").replace(/\s+/g, "_");
                 let fileName = `BaoGia_${safeName}.pdf`;
 
-                // Tải trực tiếp âm thầm
-                pdfMake.createPdf(docDefinition).download(fileName);
+                pdfMake.createPdf(docDefinition).getBlob(function(blob) {
+                    var url = window.URL.createObjectURL(blob);
+                    var a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = url;
+                    a.download = fileName;
+                    document.body.appendChild(a);
+                    a.click();
+                    setTimeout(function() {
+                        document.body.removeChild(a);
+                        window.URL.revokeObjectURL(url);
+                    }, 100);
+                });
             } catch (err) {
-                alert("Đã xảy ra lỗi khi xuất file. Bạn vui lòng thử mở trang web bằng trình duyệt Safari hoặc Chrome nhé.");
+                console.error(err);
             }
         }
 
