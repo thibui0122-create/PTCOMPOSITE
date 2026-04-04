@@ -13,10 +13,10 @@
         body { font-family: 'Roboto', sans-serif; background-color: #f1f5f9; margin: 0; padding: 0; }
         .a4-page { width: 210mm; min-height: 296mm; padding: 12mm 15mm; margin: 20px auto; background: white; box-shadow: 0 0 20px rgba(0,0,0,0.15); color: black; }
         .table-custom { width: 100%; border-collapse: collapse; border: 1px solid black; }
-        .table-custom th, .table-custom td { border: 1px solid black !important; padding: 8px 10px; font-size: 13px; color: black; }
+        .table-custom th, .table-custom td { border: 1px solid black !important; padding: 7px 8px; font-size: 13px; color: black; }
         
-        /* ĐỔI MÀU NỀN TIÊU ĐỀ BẢNG THÀNH XANH NHẠT NHƯ ẢNH */
-        .table-custom th { background-color: #e6f2ff !important; font-weight: bold; }
+        /* MÀU NỀN XANH NHẠT CHUẨN THEO ẢNH CỦA ANH */
+        .table-custom th { background-color: #e2efff !important; font-weight: bold; text-transform: none; }
         
         .input-clean { border: none; border-bottom: 1px solid #e2e8f0; outline: none; width: 100%; padding: 4px; background: transparent; }
         .input-clean:focus { border-bottom: 2px solid #2563eb; }
@@ -66,11 +66,11 @@
     </div>
 
     <div id="preview-mode" class="hidden bg-slate-300 py-10 min-h-screen">
-        <div class="max-w-[210mm] mx-auto mb-8 flex gap-4 px-4">
-            <button onclick="exportNativePDF()" id="btn-download-pdf" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-4 rounded-2xl font-black uppercase shadow-xl transition-all active:scale-95 text-lg tracking-widest flex flex-col items-center justify-center">
-                <span><i class="fa-solid fa-download mr-2"></i> XUẤT FILE PDF</span>
-                <span class="text-[10px] font-normal opacity-80 mt-1" id="btn-helper-text">(Tải về máy tính)</span>
+        <div class="max-w-[210mm] mx-auto mb-8 flex flex-col gap-2 px-4">
+            <button onclick="downloadPDF()" class="w-full bg-red-600 hover:bg-red-700 text-white py-4 rounded-2xl font-black uppercase shadow-xl transition-all active:scale-95 text-lg tracking-widest">
+                <i class="fa-solid fa-download mr-2"></i> BẤM ĐỂ TẢI FILE PDF
             </button>
+            <p class="text-center text-xs text-red-600 font-bold bg-red-100 p-2 rounded-lg">LƯU Ý: Phải mở bằng Safari hoặc Chrome, KHÔNG tải được nếu đang xem trực tiếp trong Zalo.</p>
         </div>
         <div id="preview-a4" class="a4-page mx-auto shadow-2xl">
             <div id="preview-content"></div>
@@ -86,9 +86,9 @@
                 <input type="text" id="set-name" placeholder="Tên Công Ty" class="w-full border p-2.5 rounded shadow-sm">
                 <input type="text" id="set-tax" placeholder="Mã số thuế" class="w-full border p-2.5 rounded shadow-sm">
                 <input type="text" id="set-addr" placeholder="Trụ sở chính" class="w-full border p-2.5 rounded shadow-sm">
-                <input type="text" id="set-branch" placeholder="Chi nhánh (Nếu không có thì để trống)" class="w-full border p-2.5 rounded shadow-sm text-blue-700">
+                <input type="text" id="set-branch" placeholder="Chi nhánh" class="w-full border p-2.5 rounded shadow-sm text-blue-700">
                 <input type="text" id="set-phone" placeholder="Số điện thoại" class="w-full border p-2.5 rounded shadow-sm">
-                <input type="text" id="set-email" placeholder="Email (Nếu không có thì để trống)" class="w-full border p-2.5 rounded shadow-sm">
+                <input type="text" id="set-email" placeholder="Email" class="w-full border p-2.5 rounded shadow-sm">
                 <textarea id="set-bank" placeholder="Ngân hàng" rows="2" class="w-full border p-2.5 rounded shadow-sm"></textarea>
                 <input type="text" id="set-stk" placeholder="Số tài khoản" class="w-full border p-2.5 rounded shadow-sm font-black text-blue-700">
                 <input type="number" id="set-vat" placeholder="Thuế VAT (%)" class="w-full border p-2.5 rounded shadow-sm">
@@ -122,7 +122,7 @@
             bank: savedConfig.bank || "Ngân hàng MB - Ngân hàng Quân đội, chi nhánh Rạch Giá, An Giang",
             stk: savedConfig.stk || "242666686868",
             director: savedConfig.director || "BÙI NHỰT PHƯƠNG",
-            vat: savedConfig.vat !== undefined ? savedConfig.vat : 8
+            vat: savedConfig.vat !== undefined ? savedConfig.vat : 10
         };
         let logoBase64 = localStorage.getItem('pt_logo_64') || "";
         let items = [{ id: 1, name: "Nhớt 4 thì - can 4 lít", unit: "Can", qty: 4, price: 700000 }];
@@ -130,11 +130,6 @@
         window.onload = () => {
             document.getElementById('quote-date').value = new Date().toISOString().split('T')[0];
             renderItems(); calculateAll();
-            
-            // Cập nhật gợi ý nút bấm tùy theo điện thoại hay máy tính
-            if (navigator.canShare) {
-                document.getElementById('btn-helper-text').innerText = "(Chia sẻ trực tiếp qua Zalo / Lưu vào Tệp)";
-            }
         };
 
         function renderItems() {
@@ -162,7 +157,6 @@
             document.getElementById('sum-words').innerText = "(Bằng chữ: " + docTien(total) + ")";
         }
 
-        // HÀM ĐỌC SỐ CHUẨN ĐÃ FIX LỖI "KHÔNG TRĂM LINH"
         function docTien(so) {
             if (so === 0) return "Không đồng";
             const chuSo = ["không", "một", "hai", "ba", "bốn", "năm", "sáu", "bảy", "tám", "chín"];
@@ -176,11 +170,7 @@
                 return s;
             }
             let res = "", i = 0, temp = Math.abs(so);
-            do { 
-                let lop = temp % 1000; 
-                if (lop > 0) { let s = doc3(lop, temp < 1000); res = s + hang[i] + " " + res; } 
-                temp = Math.floor(temp / 1000); i++; 
-            } while (temp > 0);
+            do { let lop = temp % 1000; if (lop > 0) { let s = doc3(lop, temp < 1000); res = s + hang[i] + " " + res; } temp = Math.floor(temp / 1000); i++; } while (temp > 0);
             return res.trim().replace(/\s+/g, ' ').charAt(0).toUpperCase() + res.trim().replace(/\s+/g, ' ').slice(1) + " đồng chẵn.";
         }
 
@@ -194,7 +184,6 @@
             window.scrollTo(0,0);
         }
 
-        // CẬP NHẬT MÀU NỀN XANH CHO BẢNG PREVIEW
         function syncPreview() {
             const d = new Date(document.getElementById('quote-date').value);
             const dStr = `Ngày ${d.getDate()} tháng ${d.getMonth()+1} năm ${d.getFullYear()}`;
@@ -274,8 +263,7 @@
             `;
         }
 
-        // HÀM XUẤT PDF - HOẠT ĐỘNG CHUẨN CHO CẢ MÁY TÍNH LẪN ĐIỆN THOẠI (iOS / Android)
-        function exportNativePDF() {
+        function downloadPDF() {
             const d = new Date(document.getElementById('quote-date').value);
             const dStr = `Ngày ${d.getDate()} tháng ${d.getMonth()+1} năm ${d.getFullYear()}`;
             let total = items.reduce((s, i) => s + (i.qty * i.price), 0);
@@ -288,154 +276,3 @@
                     { text: 'SL', style: 'tableHeader' },
                     { text: 'Đơn giá', style: 'tableHeader', alignment: 'right' },
                     { text: 'Thành tiền', style: 'tableHeader', alignment: 'right' }
-                ]
-            ];
-
-            items.forEach((it, idx) => {
-                tableBody.push([
-                    { text: idx+1, alignment: 'center', margin: [0, 5] },
-                    { text: it.name, bold: true, margin: [0, 5] },
-                    { text: it.unit, alignment: 'center', margin: [0, 5] },
-                    { text: it.qty, alignment: 'center', bold: true, margin: [0, 5] },
-                    { text: it.price.toLocaleString('vi-VN'), alignment: 'right', margin: [0, 5] },
-                    { text: (it.qty*it.price).toLocaleString('vi-VN'), alignment: 'right', bold: true, color: '#003399', margin: [0, 5] }
-                ]);
-            });
-
-            let companyInfoStack = [
-                { text: config.name, color: '#cc0000', bold: true, fontSize: 13, alignment: 'right', margin: [0, 0, 0, 2] },
-                { text: `MST: ${config.tax}`, fontSize: 9, alignment: 'right' },
-                { text: `ĐC: ${config.addr}`, fontSize: 9, alignment: 'right' }
-            ];
-            if(config.branch) companyInfoStack.push({ text: `CN: ${config.branch}`, fontSize: 9, alignment: 'right' });
-            companyInfoStack.push({ text: [{text: 'Tel: ', fontSize: 9}, {text: config.phone, fontSize: 9, color: '#003399', bold: true}], alignment: 'right' });
-            if(config.email) companyInfoStack.push({ text: `Email: ${config.email}`, fontSize: 9, alignment: 'right' });
-
-            const docDefinition = {
-                pageSize: 'A4',
-                pageMargins: [40, 40, 40, 40],
-                content: [
-                    {
-                        columns: [
-                            logoBase64 ? { image: logoBase64, width: 100 } : { text: 'PHƯƠNG THANH', width: 100, color: '#ccc', bold: true, margin: [0, 10, 0, 0] },
-                            { stack: companyInfoStack }
-                        ]
-                    },
-                    { canvas: [{ type: 'line', x1: 0, y1: 5, x2: 515, y2: 5, lineWidth: 2, lineColor: '#cc0000' }], margin: [0, 5, 0, 15] },
-                    
-                    { text: 'BẢNG BÁO GIÁ', color: '#003399', fontSize: 20, bold: true, alignment: 'center', characterSpacing: 1 },
-                    { text: dStr, italics: true, fontSize: 11, alignment: 'center', margin: [0, 0, 0, 20] },
-
-                    { text: 'I. THÔNG TIN KHÁCH HÀNG', color: '#003399', fontSize: 11, bold: true, margin: [0, 0, 0, 5] },
-                    { text: [{text: 'Khách hàng: ', bold: true}, {text: (document.getElementById('cust-name').value || "...").toUpperCase()}], fontSize: 11, margin: [0, 2] },
-                    { text: [{text: 'Địa chỉ: ', bold: true}, {text: document.getElementById('cust-addr').value || "..."}], fontSize: 11, margin: [0, 2] },
-                    { text: [{text: 'Điện thoại/MST: ', bold: true}, {text: document.getElementById('cust-phone').value || "..."}], fontSize: 11, margin: [0, 2, 0, 15] },
-
-                    { text: 'II. CHI TIẾT BÁO GIÁ', color: '#003399', fontSize: 11, bold: true, margin: [0, 0, 0, 5] },
-                    {
-                        table: {
-                            headerRows: 1,
-                            widths: [30, '*', 40, 30, 75, 85],
-                            body: tableBody
-                        },
-                        layout: {
-                            hLineWidth: function (i, node) { return 1; },
-                            vLineWidth: function (i, node) { return 1; },
-                            hLineColor: function (i, node) { return 'black'; },
-                            vLineColor: function (i, node) { return 'black'; }
-                        }
-                    },
-
-                    { text: `TỔNG CỘNG: ${total.toLocaleString('vi-VN')} VNĐ`, color: '#cc0000', fontSize: 15, bold: true, alignment: 'right', margin: [0, 20, 0, 0] },
-                    { text: `(Bằng chữ: ${docTien(total)})`, italics: true, fontSize: 10, color: '#444', alignment: 'right', margin: [0, 2, 0, 20] },
-
-                    {
-                        columns: [
-                            {
-                                width: '65%',
-                                stack: [
-                                    { text: 'Ghi chú & Điều khoản:', bold: true, decoration: 'underline', fontSize: 11, margin: [0, 0, 0, 5] },
-                                    {
-                                        ul: [
-                                            `Giá trên đã bao gồm ${config.vat}% VAT.`,
-                                            `Thanh toán chia làm 2 đợt.`,
-                                            `Báo giá có hiệu lực 15 ngày.`
-                                        ],
-                                        fontSize: 11, margin: [0, 0, 0, 10]
-                                    },
-                                    { text: 'Thông tin chuyển khoản:', bold: true, italics: true, fontSize: 11, margin: [0, 0, 0, 2] },
-                                    { text: config.bank, fontSize: 11, margin: [0, 0, 0, 2] },
-                                    { text: [{text: 'Đơn vị thụ hưởng: ', bold: true}, {text: config.name.toUpperCase()}], fontSize: 11, margin: [0, 0, 0, 2] },
-                                    { text: `STK: ${config.stk}`, color: '#003399', bold: true, fontSize: 13 }
-                                ]
-                            },
-                            {
-                                width: '35%',
-                                alignment: 'center',
-                                stack: [
-                                    { text: dStr, italics: true, fontSize: 11, margin: [0, 0, 0, 5] },
-                                    { text: 'GIÁM ĐỐC', color: '#003399', bold: true, fontSize: 12, margin: [0, 0, 0, 60] },
-                                    { text: config.director, bold: true, fontSize: 12, decoration: 'underline' }
-                                ]
-                            }
-                        ]
-                    },
-                    { text: 'Xin chân thành cảm ơn Quý khách hàng!', italics: true, fontSize: 10, alignment: 'center', margin: [0, 40, 0, 0] }
-                ],
-                // CẬP NHẬT MÀU NỀN XANH NHẠT CHO BẢN XUẤT PDF (#e6f2ff)
-                styles: { tableHeader: { bold: true, fontSize: 11, color: 'black', fillColor: '#e6f2ff', alignment: 'center', margin: [0, 5] } },
-                defaultStyle: { font: 'Roboto' }
-            };
-
-            // THUẬT TOÁN XUẤT PDF DÀNH CHO CẢ MÁY TÍNH VÀ ĐIỆN THOẠI
-            let rawName = document.getElementById('cust-name').value || "PhuongThanh";
-            let safeName = rawName.replace(/[^a-zA-Z0-9]/g, "_");
-            const fileName = `BaoGia_${safeName}.pdf`;
-            
-            const pdfDocGenerator = pdfMake.createPdf(docDefinition);
-
-            // Kiểm tra xem trình duyệt có tính năng "Chia sẻ" (Share) không - thường là điện thoại iOS/Android
-            if (navigator.canShare) {
-                pdfDocGenerator.getBlob((blob) => {
-                    const file = new File([blob], fileName, { type: 'application/pdf' });
-                    // Mở bảng Share của iPhone/Android để khách chọn gửi Zalo hoặc Lưu vào Tệp
-                    navigator.share({
-                        files: [file],
-                        title: 'Báo Giá - ' + rawName,
-                    }).catch((error) => {
-                        // Nếu khách hủy share, thì ép tải xuống
-                        pdfDocGenerator.download(fileName);
-                    });
-                });
-            } else {
-                // Máy tính thì tải thẳng về thư mục Download
-                pdfDocGenerator.download(fileName);
-            }
-        }
-
-        function uploadLogo(input) {
-            const file = input.files[0];
-            const reader = new FileReader();
-            reader.onload = (e) => { logoBase64 = e.target.result; localStorage.setItem('pt_logo_64', logoBase64); };
-            if(file) reader.readAsDataURL(file);
-        }
-
-        function showSettings() {
-            ['name','tax','addr','branch','phone','email','bank','stk','vat','director'].forEach(k => { document.getElementById('set-'+k).value = config[k]; });
-            document.getElementById('modal-settings').classList.remove('hidden');
-        }
-        function closeSettings() { document.getElementById('modal-settings').classList.add('hidden'); }
-        function saveSettings() {
-            ['name','tax','addr','branch','phone','email','bank','stk','vat','director'].forEach(k => { config[k] = document.getElementById('set-'+k).value; });
-            localStorage.setItem('pt_config', JSON.stringify(config));
-            closeSettings(); calculateAll();
-        }
-
-        function addItem() { items.push({ id: Date.now(), name: "", unit: "Cái", qty: 1, price: 0 }); renderItems(); calculateAll(); }
-        function removeItem(id) { if(items.length > 1) { items = items.filter(i => i.id !== id); renderItems(); calculateAll(); } }
-        function updateItem(id, f, v) { const i = items.find(x => x.id === id); if(i) { i[f] = f === 'qty' ? (parseFloat(v)||0) : v; calculateAll(); } }
-        function updatePrice(id, v) { const val = parseInt(v.replace(/\D/g, '')) || 0; const i = items.find(x => x.id === id); if(i) { i.price = val; calculateAll(); } }
-        function applyCatalog(id, idx) { if(idx === "") return; const i = items.find(x => x.id === id); i.name = CATALOG[idx].n; i.unit = CATALOG[idx].u; i.price = CATALOG[idx].p; renderItems(); calculateAll(); }
-    </script>
-</body>
-</html>
