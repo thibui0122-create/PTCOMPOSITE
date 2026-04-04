@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Báo Giá Pro - Phương Thanh Composite</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        @media print { .no-print { display: none !important; } }
+        .a4-page { width: 210mm; min-height: 297mm; padding: 15mm; margin: 10px auto; background: white; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body class="bg-gray-100 pb-20">
+
+    <nav class="bg-blue-900 text-white p-3 sticky top-0 z-50 shadow-md no-print flex justify-between items-center">
+        <div class="font-bold flex items-center gap-2">📄 PHƯƠNG THANH - BÁO GIÁ</div>
+        <div class="flex gap-2">
+            <button onclick="showSettings()" class="bg-blue-700 p-2 rounded hover:bg-blue-600 shadow text-xs uppercase font-bold">⚙️ Cài đặt công ty</button>
+            <button onclick="toggleView('edit')" id="btn-back" class="hidden bg-gray-600 px-3 py-1 rounded text-xs font-bold uppercase">Quay lại</button>
+            <button onclick="toggleView('preview')" id="btn-go-preview" class="bg-green-600 hover:bg-green-500 px-4 py-1 rounded text-xs font-bold uppercase">Xem & Xuất PDF</button>
+        </div>
+    </nav>
+
+    <div id="edit-mode" class="max-w-4xl mx-auto p-4 space-y-6 no-print">
+        <div class="bg-white rounded-lg shadow p-4 border-l-4 border-blue-600">
+            <h3 class="font-bold text-blue-800 mb-3 uppercase text-xs">Thông tin khách hàng</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <input type="text" id="cust-name" placeholder="TÊN KHÁCH HÀNG" class="border p-2 rounded w-full font-bold uppercase shadow-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                <input type="date" id="quote-date" class="border p-2 rounded w-full bg-gray-50">
+                <input type="text" id="cust-addr" placeholder="Địa chỉ khách hàng" class="border p-2 rounded w-full col-span-1 md:col-span-2">
+                <input type="text" id="cust-phone" placeholder="SĐT hoặc Mã số thuế khách hàng" class="border p-2 rounded w-full">
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-4 border-l-4 border-green-600">
+            <div class="flex justify-between items-center mb-4 border-b pb-2">
+                <h3 class="font-bold text-blue-800 uppercase text-xs">Danh sách hàng hóa</h3>
+                <button onclick="addItem()" class="bg-blue-600 text-white px-4 py-1 rounded-full text-xs font-bold hover:bg-blue-700">+ Thêm hàng mới</button>
+            </div>
+            <div id="items-list" class="space-y-4"></div>
+            
+            <div class="mt-6 pt-4 border-t bg-gray-50 p-4 rounded-lg space-y-2 text-right">
+                <div class="flex justify-end gap-10 text-sm">
+                    <span class="text-gray-600 font-bold">Cộng tiền hàng:</span>
+                    <span id="sum-subtotal" class="font-bold w-32">0</span>
+                </div>
+                <div class="flex justify-end items-center gap-4 text-sm">
+                    <span class="text-gray-600 font-bold">Chiết khấu (%):</span>
+                    <input type="number" id="discount-pct" oninput="calculateAll()" value="0" class="border w-16 p-1 rounded text-center text-red-600 font-bold">
+                    <span id="sum-discount-val" class="font-bold text-red-600 w-32">-0</span>
+                </div>
+                <div class="flex justify-end gap-10 text-xl font-bold text-red-700 uppercase pt-2">
+                    <span>Tổng cộng:</span>
+                    <span id="sum-total" class="w-48 text-right font-black">0</span>
+                </div>
+                <p id="sum-words" class="text-[11px] italic text-gray-500 pt-1"></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="preview-mode" class="hidden bg-gray-200 py-10 min-h-screen">
+        <div class="max-w-4xl mx-auto mb-6 flex gap-3 px-4 no-print">
+            <button onclick="exportPDF()" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-4 rounded-lg font-bold shadow-lg uppercase">Xuất PDF Gửi Zalo</button>
+            <button onclick="window.print()" class="flex-1 bg-blue-600 text-white py-4 rounded-lg font-bold shadow-lg uppercase">In trực tiếp</button>
+        </div>
+        <div id="preview-a4" class="a4-page mx-auto shadow-2xl">
+            <div id="preview-content"></div>
+        </div>
+    </div>
+
+    <div id="modal-settings" class="fixed inset-0 bg-black/60 hidden z-[100] flex items-center justify-center p-4 no-print">
+        <div class="bg-white rounded-xl w-full max-w-lg shadow-2xl overflow-hidden">
+            <div class="bg-blue-900 text-white p-4 flex justify-between items-center uppercase font-bold text-sm">
+                <span>Cấu hình thông tin Công ty</span>
+                <button onclick="closeSettings()" class="text-2xl">&times;</button>
+            </div>
+            <div class="p-5 space-y-4 max-h-[70vh] overflow-y-auto">
+                <input type="text" id="set-name" placeholder="Tên Công Ty" class="w-full border p-2 rounded text-sm font-bold uppercase shadow-inner">
+                <input type="text" id="set-tax" placeholder="Mã số thuế" class="w-full border p-2 rounded text-sm">
+                <input type="text" id="set-addr" placeholder="Địa chỉ trụ sở" class="w-full border p-2 rounded text-sm">
+                <input type="text" id="set-phone" placeholder="Số điện thoại" class="w-full border p-2 rounded text-sm">
+                <div class="border p-3 rounded bg-blue-50">
+                    <label class="block text-[10px] font-bold mb-1 uppercase text-blue-700">Ngân hàng & Chi nhánh:</label>
+                    <textarea id="set-bank" rows="2" class="w-full border p-2 rounded text-sm"></textarea>
+                    <label class="block text-[10px] font-bold mt-2 mb-1 uppercase text-blue-700">Số tài khoản (STK):</label>
+                    <input type="text" id="set-stk" class="w-full border p-2 rounded text-sm font-bold text-blue-900">
+                </div>
+                <input type="text" id="set-director" placeholder="Họ tên Giám đốc" class="w-full border p-2 rounded text-sm">
+                <div class="flex gap-2 items-center bg-yellow-50 p-2 rounded">
+                    <span class="text-xs font-bold">Mức VAT (%) trong báo giá:</span>
+                    <input type="number" id="set-vat" class="border p-1 w-16 rounded text-center font-bold text-red-600">
+                </div>
+            </div>
+            <div class="p-4 bg-gray-100 text-right space-x-2">
+                <button onclick="saveSettings()" class="bg-blue-600 text-white px-8 py-2 rounded-lg font-bold shadow hover:bg-blue-700">LƯU LẠI</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DANH SÁCH HÀNG HÓA SẴN CÓ ---
+        const CATALOG = [
+            { n: "Nhớt động cơ máy 2 thì", u: "Can", p: 525000 },
+            { n: "Nhớt động cơ máy 4 thì", u: "Can", p: 683333 },
+            { n: "Nhớt động cơ máy 1 lít", u: "Can", p: 270000 },
+            { n: "Nhớt hộp số 1 lít", u: "Can", p: 270000 },
+            { n: "Nhớt hộp số 350ml", u: "Tuýp", p: 180000 },
+            { n: "Nhớt 4 thì - can 4 lít", u: "Can", p: 700000 },
+            { n: "Nhớt 2 thì - can 4 lít", u: "Thùng", p: 3150000 },
+            { n: "Nhớt 4 thì - can 4 lít (Thùng)", u: "Thùng", p: 4100000 },
+            { n: "Bồn Composite 500L", u: "Cái", p: 1500000 },
+            { n: "Bánh lái phụ (250 - 4 thì)", u: "Cái", p: 950000 },
+            { n: "Long đền ốc nhớt số", u: "Cái", p: 25000 },
+            { n: "Ron ốc nhớt", u: "Cái", p: 30000 },
+            { n: "Bugi - 4 thì", u: "Cái", p: 240000 },
+            { n: "Lọc nhớt", u: "Cái", p: 1050000 },
+            { n: "Lọc xăng trong 4 thì", u: "Cái", p: 890000 },
+            { n: "Lọc xăng ngoài", u: "Cái", p: 1500000 },
+            { n: "Công thợ bảo trì/thay nhớt", u: "Công", p: 1200000 }
+        ];
+
+        let config = JSON.parse(localStorage.getItem('pt_config')) || {
+            name: "CÔNG TY TNHH MTV PHƯƠNG THANH COMPOSITE",
+            tax: "1702233007",
+            addr: "506A, Ấp Tân Phước, Xã Châu Thành, Tỉnh An Giang",
+            phone: "0949.878.208 - 0942.959.263",
+            bank: "Ngân hàng MB - Ngân hàng Quân đội, chi nhánh Rạch Giá, An Giang",
+            stk: "242666686868",
+            director: "Bùi Nhựt Phương",
+            vat: 8
+        };
+
+        let items = [{ id: 1, name: "Nhớt 4 thì - can 4 lít", unit: "Can", qty: 1, price: 700000 }];
+
+        window.onload = () => {
+            document.getElementById('quote-date').value = new Date().toISOString().split('T')[0];
+            renderItems();
+            calculateAll();
+        };
+
+        function renderItems() {
+            const list = document.getElementById('items-list');
+            list.innerHTML = items.map(item => `
+                <div class="border rounded p-3 bg-white relative shadow hover:border-blue-300">
+                    <button onclick="removeItem(${item.id})" class="absolute top-1 right-2 text-red-400 font-bold">&times;</button>
+                    
+                    <select onchange="applyCatalog(${item.id}, this.value)" class="w-full text-[11px] text-blue-600 mb-2 border-b border-dashed border-blue-200 outline-none bg-blue-50/50 p-1">
+                        <option value="">-- Click để chọn hàng mẫu từ danh mục --</option>
+                        ${CATALOG.map((c, i) => `<option value="${i}">${c.n} (${c.p.toLocaleString()}đ)</option>`).join('')}
+                    </select>
+
+                    <input type="text" value="${item.name}" oninput="updateItem(${item.id}, 'name', this.value)" placeholder="Tên hàng hóa" class="w-full font-bold text-sm border-none outline-none mb-2">
+                    <div class="grid grid-cols-10 gap-2">
+                        <input type="text" value="${item.unit}" oninput="updateItem(${item.id}, 'unit', this.value)" placeholder="ĐVT" class="col-span-2 border rounded p-1 text-center text-xs">
+                        <input type="number" value="${item.qty}" oninput="updateItem(${item.id}, 'qty', this.value)" placeholder="SL" class="col-span-2 border rounded p-1 text-center font-bold text-blue-700 shadow-inner">
+                        <input type="text" value="${item.price.toLocaleString('vi-VN')}" oninput="updatePrice(${item.id}, this.value)" placeholder="Giá" class="col-span-6 border rounded p-1 text-right font-mono text-sm bg-yellow-50">
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function applyCatalog(id, idx) {
+            if(idx === "") return;
+            const i = items.find(x => x.id === id);
+            i.name = CATALOG[idx].n;
+            i.unit = CATALOG[idx].u;
+            i.price = CATALOG[idx].p;
+            renderItems();
+            calculateAll();
+        }
+
+        function addItem() { items.push({ id: Date.now(), name: "", unit: "Cái", qty: 1, price: 0 }); renderItems(); calculateAll(); }
+        function removeItem(id) { if(items.length > 1) { items = items.filter(i => i.id !== id); renderItems(); calculateAll(); } }
+        
+        function updateItem(id, f, v) { 
+            const i = items.find(x => x.id === id); 
+            if(i) { i[f] = (f==='qty') ? (parseInt(v)||0) : v; calculateAll(); }
+        }
+        
+        function updatePrice(id, v) {
+            const val = parseInt(v.replace(/\D/g, '')) || 0;
+            const i = items.find(x => x.id === id);
+            if(i) { i.price = val; calculateAll(); }
+        }
+
+        function calculateAll() {
+            let sub = items.reduce((s, i) => s + (i.qty * i.price), 0);
+            let dPct = parseFloat(document.getElementById('discount-pct').value) || 0;
+            let dVal = Math.round(sub * dPct / 100);
+            let total = sub - dVal;
+            document.getElementById('sum-subtotal').innerText = sub.toLocaleString() + " đ";
+            document.getElementById('sum-discount-val').innerText = "-" + dVal.toLocaleString() + " đ";
+            document.getElementById('sum-total').innerText = total.toLocaleString() + " VNĐ";
+            document.getElementById('sum-words').innerText = "Bằng chữ: " + docTien(total);
+        }
+
+        function toggleView(mode) {
+            if(mode === 'preview') {
+                syncPreview();
+                document.getElementById('edit-mode').classList.add('hidden');
+                document.getElementById('preview-mode').classList.remove('hidden');
+                document.getElementById('btn-go-preview').classList.add('hidden');
+                document.getElementById('btn-back').classList.remove('hidden');
+            } else {
+                document.getElementById('edit-mode').classList.remove('hidden');
+                document.getElementById('preview-mode').classList.add('hidden');
+                document.getElementById('btn-go-preview').classList.remove('hidden');
+                document.getElementById('btn-back').classList.add('hidden');
+            }
+        }
+
+        function syncPreview() {
+            const d = new Date(document.getElementById('quote-date').value);
+            const dStr = `Ngày ${d.getDate()} tháng ${d.getMonth()+1} năm ${d.getFullYear()}`;
+            let sub = items.reduce((s, i) => s + (i.qty * i.price), 0);
+            let dPct = parseFloat(document.getElementById('discount-pct').value) || 0;
+            let total = sub - Math.round(sub * dPct / 100);
+
+            document.getElementById('preview-content').innerHTML = `
+                <div style="display:flex; justify-content:space-between; border-bottom:2px solid #b91c1c; padding-bottom:10px; margin-bottom:20px;">
+                    <div style="font-size:25px; color:#ddd; font-weight:bold;">LOGO</div>
+                    <div style="text-align:right;">
+                        <h2 style="color:#b91c1c; font-size:16px; font-weight:bold;">${config.name}</h2>
+                        <p style="font-size:11px;">MST: ${config.tax}</p>
+                        <p style="font-size:11px;">ĐC: ${config.addr}</p>
+                        <p style="font-size:11px; font-weight:bold; color:#1e3a8a;">SĐT: ${config.phone}</p>
+                    </div>
+                </div>
+                <h1 style="text-align:center; color:#1e3a8a; font-size:22px; font-weight:bold; margin-bottom:5px;">BẢNG BÁO GIÁ</h1>
+                <p style="text-align:center; font-style:italic; font-size:13px; margin-bottom:20px;">${dStr}</p>
+                
+                <div style="margin-bottom:15px; font-size:14px;">
+                    <p><strong>Khách hàng:</strong> ${document.getElementById('cust-name').value.toUpperCase() || "..."}</p>
+                    <p><strong>Địa chỉ:</strong> ${document.getElementById('cust-addr').value || "..."}</p>
+                    <p><strong>Điện thoại:</strong> ${document.getElementById('cust-phone').value || "..."}</p>
+                </div>
+
+                <table style="width:100%; border-collapse:collapse; font-size:13px; border:1px solid black;">
+                    <tr style="background:#f1f5f9; font-weight:bold; text-align:center;">
+                        <td style="border:1px solid black; padding:8px;">STT</td>
+                        <td style="border:1px solid black; padding:8px;">Tên hàng hóa / Quy cách</td>
+                        <td style="border:1px solid black; padding:8px;">ĐVT</td>
+                        <td style="border:1px solid black; padding:8px;">SL</td>
+                        <td style="border:1px solid black; padding:8px;">Đơn giá</td>
+                        <td style="border:1px solid black; padding:8px;">Thành tiền</td>
+                    </tr>
+                    ${items.map((it, idx) => `
+                        <tr>
+                            <td style="border:1px solid black; padding:8px; text-align:center;">${idx+1}</td>
+                            <td style="border:1px solid black; padding:8px; font-weight:bold;">${it.name}</td>
+                            <td style="border:1px solid black; padding:8px; text-align:center;">${it.unit}</td>
+                            <td style="border:1px solid black; padding:8px; text-align:center;">${it.qty}</td>
+                            <td style="border:1px solid black; padding:8px; text-align:right;">${it.price.toLocaleString()}</td>
+                            <td style="border:1px solid black; padding:8px; text-align:right; font-weight:bold;">${(it.qty*it.price).toLocaleString()}</td>
+                        </tr>
+                    `).join('')}
+                </table>
+
+                <div style="text-align:right; margin-top:10px; font-size:14px;">
+                    ${dPct > 0 ? `<p>Cộng tiền hàng: ${sub.toLocaleString()} đ</p><p style="color:red;">Chiết khấu: -${Math.round(sub*dPct/100).toLocaleString()} đ</p>` : ''}
+                    <h3 style="color:#b91c1c; font-size:18px; font-weight:bold; margin-top:5px;">TỔNG CỘNG THANH TOÁN: ${total.toLocaleString()} VNĐ</h3>
+                    <p style="font-style:italic; font-size:11px;">(Bằng chữ: ${docTien(total)})</p>
+                </div>
+
+                <div style="margin-top:20px; font-size:14px; line-height:1.6; border-top:1px solid #eee; pt-10">
+                    <p style="font-weight:bold; text-decoration:underline;">Ghi chú & Điều khoản:</p>
+                    <ul style="list-style-type: disc; margin-left:20px;">
+                        <li>Giá trên đã bao gồm <strong>${config.vat}% VAT</strong>.</li>
+                        <li>Thanh toán trước khi nhận hàng.</li>
+                        <li>Báo giá có hiệu lực 15 ngày.</li>
+                    </ul>
+                    
+                    <p style="font-weight:bold; font-style:italic; margin-top:10px;">Thông tin chuyển khoản:</p>
+                    <p>${config.bank}</p>
+                    <p><strong>Đơn vị thụ hưởng:</strong> ${config.name}</p>
+                    <p style="color:#1e3a8a; font-size:16px; font-weight:bold;">STK: ${config.stk}</p>
+                </div>
+
+                <div style="display:grid; grid-template-columns: 1fr 1fr; margin-top:30px; text-align:center; font-size:14px;">
+                    <div></div>
+                    <div>
+                        <p style="font-style:italic;">${dStr}</p>
+                        <p style="font-weight:bold; margin-top:5px; color:#1e3a8a;">GIÁM ĐỐC</p>
+                        <div style="height:70px;"></div>
+                        <p style="font-weight:bold; text-decoration:underline;">${config.director.toUpperCase()}</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- CÁC HÀM CÀI ĐẶT ---
+        function showSettings() {
+            document.getElementById('set-name').value = config.name;
+            document.getElementById('set-tax').value = config.tax;
+            document.getElementById('set-addr').value = config.addr;
+            document.getElementById('set-phone').value = config.phone;
+            document.getElementById('set-bank').value = config.bank;
+            document.getElementById('set-stk').value = config.stk;
+            document.getElementById('set-director').value = config.director;
+            document.getElementById('set-vat').value = config.vat;
+            document.getElementById('modal-settings').classList.remove('hidden');
+        }
+        function closeSettings() { document.getElementById('modal-settings').classList.add('hidden'); }
+        function saveSettings() {
+            config = {
+                name: document.getElementById('set-name').value,
+                tax: document.getElementById('set-tax').value,
+                addr: document.getElementById('set-addr').value,
+                phone: document.getElementById('set-phone').value,
+                bank: document.getElementById('set-bank').value,
+                stk: document.getElementById('set-stk').value,
+                director: document.getElementById('set-director').value,
+                vat: parseInt(document.getElementById('set-vat').value) || 0
+            };
+            localStorage.setItem('pt_config', JSON.stringify(config));
+            closeSettings();
+        }
+
+        // --- HÀM XUẤT PDF ---
+        function exportPDF() {
+            const docDef = {
+                content: [
+                    {
+                        columns: [
+                            { text: 'LOGO', width: 80, color: '#ddd', bold: true, fontSize: 18 },
+                            {
+                                stack: [
+                                    { text: config.name, color: '#b91c1c', bold: true, fontSize: 13 },
+                                    { text: `MST: ${config.tax}`, fontSize: 9 },
+                                    { text: `ĐC: ${config.addr}`, fontSize: 9 },
+                                    { text: `SĐT: ${config.phone}`, color: '#1e3a8a', bold: true, fontSize: 10 },
+                                ], alignment: 'right'
+                            }
+                        ]
+                    },
+                    { canvas: [{ type: 'line', x1: 0, y1: 5, x2: 515, y2: 5, lineWidth: 1.5, lineColor: '#b91c1c' }] },
+                    { text: 'BẢNG BÁO GIÁ', alignment: 'center', fontSize: 22, bold: true, color: '#1e3a8a', margin: [0, 20, 0, 15] },
+                    { text: `Khách hàng: ${document.getElementById('cust-name').value.toUpperCase()}`, bold: true, fontSize: 11 },
+                    {
+                        table: {
+                            headerRows: 1, widths: [25, '*', 35, 30, 70, 80],
+                            body: [
+                                [{text:'STT', fillColor:'#f1f5f9', bold:true, alignment:'center'}, {text:'Tên hàng hóa', fillColor:'#f1f5f9', bold:true}, {text:'ĐVT', fillColor:'#f1f5f9', bold:true, alignment:'center'}, {text:'SL', fillColor:'#f1f5f9', bold:true, alignment:'center'}, {text:'Giá', fillColor:'#f1f5f9', bold:true, alignment:'right'}, {text:'Tổng', fillColor:'#f1f5f9', bold:true, alignment:'right'}],
+                                ...items.map((it, idx) => [idx+1, it.name, it.unit, it.qty, it.price.toLocaleString(), (it.qty*it.price).toLocaleString()])
+                            ]
+                        }, margin: [0, 10]
+                    },
+                    { text: `TỔNG CỘNG THANH TOÁN: ${document.getElementById('sum-total').innerText}`, alignment: 'right', bold: true, color: '#b91c1c', fontSize: 15 },
+                    { text: `Ghi chú & Điều khoản:`, bold: true, margin: [0, 15, 0, 5], decoration: 'underline' },
+                    { ul: [`Giá đã bao gồm ${config.vat}% VAT`, `Thanh toán trước khi nhận hàng`, `Báo giá có hiệu lực 15 ngày`] },
+                    { text: `Thông tin chuyển khoản:`, bold: true, italics: true, margin: [0, 10, 0, 2] },
+                    { text: config.bank },
+                    { text: `Đơn vị thụ hưởng: ${config.name}` },
+                    { text: `STK: ${config.stk}`, bold: true, fontSize: 14, color: '#1e3a8a' }
+                ],
+                defaultStyle: { font: 'Roboto' }
+            };
+            pdfMake.createPdf(docDef).download("Bao_Gia.pdf");
+        }
+
+        function docTien(n) {
+            if (n === 0) return "Không đồng";
+            const chu = ["không", "một", "hai", "ba", "bốn", "năm", "sáu", "bảy", "tám", "chín"];
+            const units = ["", "nghìn", "triệu", "tỷ", "nghìn tỷ", "triệu tỷ"];
+            let res = "", i = 0; let so = Math.abs(n);
+            while (so > 0) {
+                let lop = so % 1000;
+                if (lop > 0) {
+                    let s = ""; let tr = Math.floor(lop/100), ch = Math.floor((lop%100)/10), dv = lop%10;
+                    if (tr>0 || res!=="") s += chu[tr] + " trăm ";
+                    if (ch==0 && dv!=0 && s!=="") s += "linh ";
+                    if (ch>0) { s += (ch==1 ? "mười " : chu[ch] + " mươi "); }
+                    if (dv>0) { if (dv==1 && ch>1) s += "mốt "; else if (dv==5 && ch>0) s += "lăm "; else s += chu[dv] + " "; }
+                    res = s + units[i] + " " + res;
+                }
+                so = Math.floor(so/1000); i++;
+            }
+            return res.trim().charAt(0).toUpperCase() + res.trim().slice(1) + " đồng.";
+        }
+    </script>
+</body>
+</html>
