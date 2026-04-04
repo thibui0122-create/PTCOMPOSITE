@@ -20,16 +20,15 @@
             .no-print { display: none !important; }
             .a4-page { margin: 0; box-shadow: none; width: 100%; padding: 10mm 15mm; }
         }
-        /* Kẻ bảng sắc nét */
         .table-custom { width: 100%; border-collapse: collapse; margin-top: 10px; }
         .table-custom th, .table-custom td { 
-            border: 1px solid #333 !important; 
+            border: 1px solid #000 !important; 
             padding: 8px 10px; 
             font-size: 13px;
         }
-        .table-custom th { background-color: #f8fafc; font-weight: bold; text-transform: uppercase; }
-        .input-clean { border: none; border-bottom: 1px solid #e2e8f0; outline: none; width: 100%; padding: 4px; }
-        .input-clean:focus { border-bottom: 2px solid #2563eb; background-color: #f8fafc; }
+        .table-custom th { background-color: #f1f5f9; font-weight: bold; text-transform: uppercase; }
+        .input-clean { border: none; border-bottom: 1px solid #e2e8f0; outline: none; width: 100%; padding: 4px; background: transparent; }
+        .input-clean:focus { border-bottom: 2px solid #2563eb; }
     </style>
 </head>
 <body class="text-slate-900">
@@ -40,98 +39,106 @@
             <span class="font-black text-sm tracking-tighter uppercase">Phương Thanh Composite</span>
         </div>
         <div class="flex gap-2">
-            <button onclick="showSettings()" class="bg-indigo-800 px-3 py-2 rounded text-[10px] font-bold"><i class="fa-solid fa-gear"></i> CẤU HÌNH</button>
-            <button onclick="toggleView('edit')" id="btn-back" class="hidden bg-slate-700 px-4 py-2 rounded text-[10px] font-bold uppercase">Sửa dữ liệu</button>
-            <button onclick="toggleView('preview')" id="btn-go-preview" class="bg-blue-600 hover:bg-blue-500 px-5 py-2 rounded text-[10px] font-black uppercase shadow-lg shadow-blue-900/40">Xem & In Báo Giá</button>
+            <button onclick="showSettings()" class="bg-indigo-800 px-3 py-2 rounded text-[10px] font-bold uppercase">⚙️ Cài đặt</button>
+            <button onclick="toggleView('edit')" id="btn-back" class="hidden bg-slate-700 px-4 py-2 rounded text-[10px] font-bold uppercase">Quay lại</button>
+            <button onclick="toggleView('preview')" id="btn-go-preview" class="bg-blue-600 hover:bg-blue-500 px-5 py-2 rounded text-[10px] font-black uppercase shadow-lg">Xem & In PDF</button>
         </div>
     </nav>
 
     <div id="edit-mode" class="max-w-4xl mx-auto p-4 space-y-6 no-print">
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-            <h3 class="text-indigo-900 font-black text-xs uppercase mb-4 border-b pb-2 flex items-center gap-2">
-                <i class="fa-solid fa-user-tag text-blue-600"></i> I. Thông tin khách hàng
+            <h3 class="text-blue-700 font-black text-xs uppercase mb-4 border-b pb-2 flex items-center gap-2">
+                <i class="fa-solid fa-user-tag"></i> I. Thông tin khách hàng
             </h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="space-y-1">
-                    <label class="text-[10px] font-bold text-slate-400 uppercase">Tên khách hàng</label>
-                    <input type="text" id="cust-name" placeholder="Ví dụ: CÔNG TY TNHH UNIVERSAL GROUP" class="w-full border p-2.5 rounded-xl font-bold uppercase border-slate-200 outline-none focus:ring-2 focus:ring-blue-100">
-                </div>
-                <div class="space-y-1">
-                    <label class="text-[10px] font-bold text-slate-400 uppercase">Ngày báo giá</label>
-                    <input type="date" id="quote-date" class="w-full border p-2.5 rounded-xl border-slate-200 outline-none">
-                </div>
-                <input type="text" id="cust-addr" placeholder="Địa chỉ khách hàng..." class="w-full border p-2.5 rounded-xl border-slate-200 md:col-span-2 outline-none">
-                <input type="text" id="cust-phone" placeholder="Điện thoại hoặc Mã số thuế..." class="w-full border p-2.5 rounded-xl border-slate-200 md:col-span-2 outline-none">
+                <input type="text" id="cust-name" placeholder="Tên khách hàng" class="w-full border p-2.5 rounded-xl font-bold uppercase border-slate-200 outline-none focus:ring-2 focus:ring-blue-100">
+                <input type="date" id="quote-date" class="w-full border p-2.5 rounded-xl border-slate-200 outline-none">
+                <input type="text" id="cust-addr" placeholder="Địa chỉ..." class="w-full border p-2.5 rounded-xl border-slate-200 md:col-span-2 outline-none">
+                <input type="text" id="cust-phone" placeholder="Điện thoại / MST..." class="w-full border p-2.5 rounded-xl border-slate-200 md:col-span-2 outline-none">
             </div>
         </div>
 
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
             <div class="p-4 bg-slate-50 border-b flex justify-between items-center px-6">
-                <h3 class="text-indigo-900 font-black text-xs uppercase tracking-tight">II. Chi tiết hàng hóa</h3>
-                <button onclick="addItem()" class="bg-indigo-600 text-white px-4 py-1.5 rounded-xl text-xs font-bold shadow-md shadow-indigo-200">+ Thêm sản phẩm</button>
+                <h3 class="text-blue-700 font-black text-xs uppercase tracking-tight">II. Chi tiết báo giá</h3>
+                <button onclick="addItem()" class="bg-indigo-600 text-white px-4 py-1.5 rounded-xl text-xs font-bold shadow-md">+ Thêm dòng mới</button>
             </div>
-            <div id="items-list" class="p-6 space-y-3"></div>
+            
+            <div id="items-list" class="p-6 space-y-6"></div>
             
             <div class="p-8 bg-indigo-50/30 border-t space-y-3">
-                <div class="flex justify-end gap-10 text-sm font-bold text-slate-500">
-                    <span>Tổng cộng tiền hàng:</span>
-                    <span id="sum-subtotal" class="text-slate-900">0</span>
+                <div class="flex justify-end gap-10 text-sm font-bold text-slate-500 uppercase">
+                    <span>Tổng tiền hàng:</span>
+                    <span id="sum-subtotal" class="text-slate-900 font-black">0</span>
                 </div>
-                <div class="flex justify-end gap-6 items-center">
-                    <span class="text-sm font-bold text-slate-500">Chiết khấu (%):</span>
-                    <input type="number" id="discount-pct" oninput="calculateAll()" value="0" class="border w-24 p-2 rounded-xl text-center text-red-600 font-black focus:ring-2 focus:ring-red-100 outline-none">
+                <div class="flex justify-end gap-6 items-center border-b border-indigo-100 pb-3">
+                    <span class="text-sm font-bold text-slate-500 uppercase">Chiết khấu (%):</span>
+                    <input type="number" id="discount-pct" oninput="calculateAll()" value="0" class="border w-24 p-2 rounded-xl text-center text-red-600 font-black outline-none focus:ring-2 focus:ring-red-100">
                 </div>
-                <div class="flex justify-end pt-4 border-t border-indigo-100">
+                <div class="flex justify-end pt-4">
                     <div class="text-right">
-                        <span class="text-indigo-950 font-black text-sm uppercase mr-6">Tổng thanh toán cuối cùng</span>
+                        <span class="text-red-600 font-black text-xl uppercase mr-6">Tổng cộng thanh toán:</span>
                         <div class="inline-block">
                             <span id="sum-total" class="text-4xl font-black text-blue-700 leading-none">0</span>
                             <span class="text-blue-700 font-black ml-1 text-sm uppercase">VNĐ</span>
                         </div>
                     </div>
                 </div>
-                <p id="sum-words" class="text-right text-[11px] italic text-slate-400 mt-2 font-medium"></p>
+                <p id="sum-words" class="text-right text-[12px] italic text-slate-500 font-bold mt-2"></p>
             </div>
         </div>
     </div>
 
     <div id="preview-mode" class="hidden bg-slate-300 py-10 min-h-screen">
         <div class="max-w-[210mm] mx-auto mb-8 flex gap-4 px-4 no-print">
-            <button onclick="window.print()" class="flex-1 bg-slate-900 text-white py-4 rounded-2xl font-black uppercase shadow-xl transition-transform active:scale-95"><i class="fa-solid fa-print mr-2"></i> In báo giá ngay</button>
-            <button onclick="exportPDF()" class="flex-1 bg-red-600 text-white py-4 rounded-2xl font-black uppercase shadow-xl transition-transform active:scale-95"><i class="fa-solid fa-file-pdf mr-2"></i> Lưu file PDF</button>
+            <button onclick="window.print()" class="flex-1 bg-slate-900 text-white py-4 rounded-2xl font-black uppercase shadow-xl transition-all active:scale-95"><i class="fa-solid fa-print mr-2"></i> In báo giá</button>
+            <button onclick="window.print()" class="flex-1 bg-red-600 text-white py-4 rounded-2xl font-black uppercase shadow-xl transition-all active:scale-95"><i class="fa-solid fa-file-pdf mr-2"></i> Xuất PDF</button>
         </div>
-        <div id="preview-a4" class="a4-page mx-auto">
+        <div id="preview-a4" class="a4-page mx-auto shadow-2xl">
             <div id="preview-content"></div>
         </div>
     </div>
 
     <div id="modal-settings" class="fixed inset-0 bg-black/60 hidden z-[100] flex items-center justify-center p-4 no-print backdrop-blur-sm">
         <div class="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden font-bold">
-            <div class="bg-indigo-950 text-white p-5 flex justify-between uppercase text-[10px] tracking-widest"><span>Cấu hình thông tin hệ thống</span><button onclick="closeSettings()" class="text-2xl">&times;</button></div>
-            <div class="p-6 space-y-3 text-sm bg-slate-50">
-                <div class="bg-white p-3 rounded-xl border border-slate-100">
-                    <label class="block text-[10px] text-slate-400 uppercase mb-1">Tải Logo (Ảnh):</label>
-                    <input type="file" accept="image/*" onchange="uploadLogo(this)" class="w-full text-xs">
-                </div>
-                <input type="text" id="set-name" placeholder="Tên Công Ty" class="w-full border p-3 rounded-xl">
-                <input type="text" id="set-tax" placeholder="Mã số thuế" class="w-full border p-3 rounded-xl">
-                <input type="text" id="set-addr" placeholder="Địa chỉ chính" class="w-full border p-3 rounded-xl">
-                <input type="text" id="set-branch" placeholder="Địa chỉ chi nhánh (Phú Quốc...)" class="w-full border p-3 rounded-xl">
-                <input type="text" id="set-phone" placeholder="Số điện thoại" class="w-full border p-3 rounded-xl">
-                <input type="text" id="set-email" placeholder="Email liên hệ" class="w-full border p-3 rounded-xl">
-                <textarea id="set-bank" placeholder="Tên ngân hàng - Chi nhánh" rows="2" class="w-full border p-3 rounded-xl"></textarea>
-                <input type="text" id="set-stk" placeholder="Số tài khoản" class="w-full border p-3 rounded-xl text-blue-700 font-black">
-                <div class="flex items-center justify-between p-3 bg-white rounded-xl border border-slate-100">
-                    <span class="text-xs uppercase">Thuế VAT (%) mặc định:</span>
-                    <input type="number" id="set-vat" class="w-20 border-b-2 border-indigo-600 text-center font-black outline-none">
-                </div>
+            <div class="bg-indigo-950 text-white p-5 flex justify-between uppercase text-[10px] tracking-widest"><span>Cấu hình thông tin</span><button onclick="closeSettings()">&times;</button></div>
+            <div class="p-6 space-y-3 text-sm bg-slate-50 overflow-y-auto max-h-[70vh]">
+                <input type="file" accept="image/*" onchange="uploadLogo(this)" class="w-full border p-2 rounded text-xs bg-white">
+                <input type="text" id="set-name" placeholder="Tên Công Ty" class="w-full border p-3 rounded-xl bg-white shadow-sm">
+                <input type="text" id="set-tax" placeholder="Mã số thuế" class="w-full border p-3 rounded-xl bg-white shadow-sm">
+                <input type="text" id="set-addr" placeholder="Địa chỉ chính" class="w-full border p-3 rounded-xl bg-white shadow-sm">
+                <input type="text" id="set-branch" placeholder="Địa chỉ chi nhánh" class="w-full border p-3 rounded-xl bg-white shadow-sm">
+                <input type="text" id="set-phone" placeholder="Số điện thoại" class="w-full border p-3 rounded-xl bg-white shadow-sm">
+                <input type="text" id="set-email" placeholder="Email" class="w-full border p-3 rounded-xl bg-white shadow-sm">
+                <textarea id="set-bank" placeholder="Ngân hàng - Chi nhánh" rows="2" class="w-full border p-3 rounded-xl bg-white shadow-sm"></textarea>
+                <input type="text" id="set-stk" placeholder="Số tài khoản" class="w-full border p-3 rounded-xl bg-white shadow-sm text-blue-700 font-black">
+                <input type="number" id="set-vat" placeholder="Thuế VAT (%)" class="w-full border p-3 rounded-xl bg-white shadow-sm">
             </div>
-            <div class="p-5 bg-white text-right border-t"><button onclick="saveSettings()" class="bg-indigo-900 text-white px-10 py-3 rounded-2xl uppercase text-xs font-black shadow-lg">Lưu cấu hình</button></div>
+            <div class="p-5 bg-white text-right border-t"><button onclick="saveSettings()" class="bg-indigo-900 text-white px-10 py-3 rounded-2xl uppercase text-xs font-black">Lưu lại</button></div>
         </div>
     </div>
 
     <script>
-        // --- DỮ LIỆU GỐC CỦA PHƯƠNG THANH ---
+        // --- DANH MỤC HÀNG HÓA CHUẨN ---
+        const CATALOG = [
+            { n: "Nhớt động cơ máy 2 thì", u: "Can", p: 525000 },
+            { n: "Nhớt động cơ máy 4 thì", u: "Can", p: 683333 },
+            { n: "Nhớt động cơ máy 1 lít", u: "Can", p: 270000 },
+            { n: "Nhớt hộp số 1 lít", u: "Can", p: 270000 },
+            { n: "Nhớt hộp số 350ml", u: "Tuýp", p: 180000 },
+            { n: "Nhớt 4 thì - can 4 lít", u: "Can", p: 700000 },
+            { n: "Nhớt 2 thì - can 4 lít", u: "Thùng", p: 3150000 },
+            { n: "Nhớt 4 thì - can 4 lít (Thùng)", u: "Thùng", p: 4100000 },
+            { n: "Bồn Composite 500L", u: "Cái", p: 1500000 },
+            { n: "Bánh lái phụ (250 - 4 thì)", u: "Cái", p: 950000 },
+            { n: "Ron ốc nhớt", u: "Cái", p: 30000 },
+            { n: "Bugi - 4 thì", u: "Cái", p: 240000 },
+            { n: "Lọc nhớt", u: "Cái", p: 1050000 },
+            { n: "Lọc xăng trong 4 thì", u: "Cái", p: 890000 },
+            { n: "Lọc xăng ngoài", u: "Cái", p: 1500000 },
+            { n: "Công thợ thay nhớt/bảo trì", u: "Công", p: 1200000 }
+        ];
+
         let config = JSON.parse(localStorage.getItem('pt_config')) || {
             name: "CÔNG TY TNHH MTV PHƯƠNG THANH COMPOSITE",
             tax: "1702233007",
@@ -144,6 +151,7 @@
             director: "BÙI NHỰT PHƯƠNG",
             vat: 10
         };
+
         let logoBase64 = localStorage.getItem('pt_logo_64') || "";
         let items = [{ id: 1, name: "Nhớt 4 thì - can 4 lít", unit: "Can", qty: 4, price: 700000 }];
 
@@ -153,7 +161,70 @@
             calculateAll();
         };
 
-        // --- ĐỌC SỐ TIỀN CHUẨN (FIX LỖI) ---
+        function renderItems() {
+            const list = document.getElementById('items-list');
+            list.innerHTML = items.map(item => `
+                <div class="bg-slate-50/50 border border-slate-200 p-4 rounded-2xl relative shadow-sm">
+                    <button onclick="removeItem(${item.id})" class="absolute top-2 right-2 text-red-300 hover:text-red-500 font-bold">&times;</button>
+                    
+                    <div class="flex items-center gap-2 mb-3 bg-blue-50 p-2 rounded-xl border border-blue-100">
+                        <i class="fa-solid fa-list-ul text-blue-400 text-xs ml-1"></i>
+                        <select onchange="applyCatalog(${item.id}, this.value)" class="w-full text-xs font-bold text-blue-700 bg-transparent outline-none">
+                            <option value="">-- Click để chọn hàng mẫu --</option>
+                            ${CATALOG.map((c, i) => `<option value="${i}">${c.n} (${c.p.toLocaleString()}đ)</option>`).join('')}
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-12 gap-4">
+                        <div class="col-span-12 md:col-span-5">
+                            <input type="text" value="${item.name}" oninput="updateItem(${item.id}, 'name', this.value)" class="input-clean font-bold text-slate-800" placeholder="Tên hàng hóa">
+                        </div>
+                        <div class="col-span-4 md:col-span-2">
+                            <input type="text" value="${item.unit}" oninput="updateItem(${item.id}, 'unit', this.value)" class="input-clean text-center text-slate-500" placeholder="ĐVT">
+                        </div>
+                        <div class="col-span-3 md:col-span-2">
+                            <input type="number" value="${item.qty}" oninput="updateItem(${item.id}, 'qty', this.value)" class="input-clean text-center font-black text-blue-600" placeholder="SL">
+                        </div>
+                        <div class="col-span-5 md:col-span-3">
+                            <input type="text" value="${item.price.toLocaleString('vi-VN')}" oninput="updatePrice(${item.id}, this.value)" class="input-clean text-right font-black text-slate-900" placeholder="Giá">
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function applyCatalog(id, idx) {
+            if(idx === "") return;
+            const i = items.find(x => x.id === id);
+            i.name = CATALOG[idx].n; i.unit = CATALOG[idx].u; i.price = CATALOG[idx].p;
+            renderItems(); calculateAll();
+        }
+
+        function addItem() { items.push({ id: Date.now(), name: "", unit: "Cái", qty: 1, price: 0 }); renderItems(); calculateAll(); }
+        function removeItem(id) { if(items.length > 1) { items = items.filter(i => i.id !== id); renderItems(); calculateAll(); } }
+        function updateItem(id, f, v) { 
+            const i = items.find(x => x.id === id); 
+            if(i) {
+                if(f === 'qty') i.qty = parseFloat(v) || 0;
+                else i[f] = v;
+                calculateAll();
+            }
+        }
+        function updatePrice(id, v) {
+            const val = parseInt(v.replace(/\D/g, '')) || 0;
+            const i = items.find(x => x.id === id);
+            if(i) { i.price = val; calculateAll(); }
+        }
+
+        function calculateAll() {
+            let sub = items.reduce((s, i) => s + (i.qty * i.price), 0);
+            let dPct = parseFloat(document.getElementById('discount-pct').value) || 0;
+            let total = sub - Math.round(sub * dPct / 100);
+            document.getElementById('sum-subtotal').innerText = sub.toLocaleString('vi-VN') + " đ";
+            document.getElementById('sum-total').innerText = total.toLocaleString('vi-VN');
+            document.getElementById('sum-words').innerText = "(Bằng chữ: " + docTien(total) + ")";
+        }
+
         function docTien(so) {
             if (so === 0) return "Không đồng";
             const chuSo = ["không", "một", "hai", "ba", "bốn", "năm", "sáu", "bảy", "tám", "chín"];
@@ -188,48 +259,6 @@
             return res.charAt(0).toUpperCase() + res.slice(1) + " đồng chẵn.";
         }
 
-        // --- XỬ LÝ HÀNG HÓA ---
-        function renderItems() {
-            const list = document.getElementById('items-list');
-            list.innerHTML = items.map(item => `
-                <div class="grid grid-cols-12 gap-3 items-center border-b border-slate-100 pb-3">
-                    <div class="col-span-5"><input type="text" value="${item.name}" oninput="updateItem(${item.id}, 'name', this.value)" class="input-clean font-bold text-slate-700" placeholder="Tên hàng hóa"></div>
-                    <div class="col-span-2"><input type="text" value="${item.unit}" oninput="updateItem(${item.id}, 'unit', this.value)" class="input-clean text-center text-xs text-slate-500" placeholder="ĐVT"></div>
-                    <div class="col-span-1"><input type="number" value="${item.qty}" oninput="updateItem(${item.id}, 'qty', this.value)" class="input-clean text-center font-black text-blue-600"></div>
-                    <div class="col-span-3"><input type="text" value="${item.price.toLocaleString('vi-VN')}" oninput="updatePrice(${item.id}, this.value)" class="input-clean text-right font-bold text-slate-800"></div>
-                    <div class="col-span-1 text-right"><button onclick="removeItem(${item.id})" class="text-red-300 hover:text-red-500 transition-colors"><i class="fa-solid fa-trash-can"></i></button></div>
-                </div>
-            `).join('');
-        }
-
-        function addItem() { items.push({ id: Date.now(), name: "", unit: "Cái", qty: 1, price: 0 }); renderItems(); calculateAll(); }
-        function removeItem(id) { if(items.length > 1) { items = items.filter(i => i.id !== id); renderItems(); calculateAll(); } }
-        
-        function updateItem(id, f, v) { 
-            const i = items.find(x => x.id === id); 
-            if(i) {
-                if(f === 'qty') i.qty = parseFloat(v) || 0;
-                else i[f] = v;
-                calculateAll();
-            }
-        }
-        
-        function updatePrice(id, v) {
-            const val = parseInt(v.replace(/\D/g, '')) || 0;
-            const i = items.find(x => x.id === id);
-            if(i) { i.price = val; calculateAll(); }
-        }
-
-        function calculateAll() {
-            let subtotal = items.reduce((s, i) => s + (i.qty * i.price), 0);
-            let dPct = parseFloat(document.getElementById('discount-pct').value) || 0;
-            let total = subtotal - Math.round(subtotal * dPct / 100);
-            
-            document.getElementById('sum-subtotal').innerText = subtotal.toLocaleString('vi-VN') + " đ";
-            document.getElementById('sum-total').innerText = total.toLocaleString('vi-VN');
-            document.getElementById('sum-words').innerText = "(Bằng chữ: " + docTien(total) + ")";
-        }
-
         function toggleView(mode) {
             const isPreview = mode === 'preview';
             if(isPreview) syncPreview();
@@ -243,21 +272,21 @@
         function syncPreview() {
             const d = new Date(document.getElementById('quote-date').value);
             const dStr = `Ngày ${d.getDate()} tháng ${d.getMonth()+1} năm ${d.getFullYear()}`;
-            let subtotal = items.reduce((s, i) => s + (i.qty * i.price), 0);
+            let sub = items.reduce((s, i) => s + (i.qty * i.price), 0);
             let dPct = parseFloat(document.getElementById('discount-pct').value) || 0;
-            let total = subtotal - Math.round(subtotal * dPct / 100);
+            let total = sub - Math.round(sub * dPct / 100);
 
             document.getElementById('preview-content').innerHTML = `
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                    <div style="width:140px;">
+                    <div style="width:130px;">
                         ${logoBase64 ? `<img src="${logoBase64}" style="width:100%;">` : `<div style="text-align:center; color:#ddd; font-weight:900; border:2px dashed #eee; padding:20px;">PHƯƠNG THANH</div>`}
                     </div>
-                    <div style="text-align:right; font-size:11.5px; line-height:1.4; color:#334155;">
-                        <h2 style="color:#cc0000; font-size:17px; font-weight:900; margin:0; letter-spacing:-0.5px;">${config.name}</h2>
-                        <p style="margin:2px 0 0 0;">Mã số thuế: ${config.tax}</p>
+                    <div style="text-align:right; font-size:11.5px; line-height:1.4; color:#000;">
+                        <h2 style="color:#cc0000; font-size:17px; font-weight:900; margin:0;">${config.name}</h2>
+                        <p style="margin:2px 0 0 0;">MST: ${config.tax}</p>
                         <p style="margin:0;">ĐC: ${config.addr}</p>
-                        <p style="margin:0;">Chi nhánh: ${config.branch}</p>
-                        <p style="margin:2px 0 0 0;">Hotline: <span style="color:#003399; font-weight:bold; font-size:13px;">${config.phone}</span></p>
+                        <p style="margin:0;">CN: ${config.branch}</p>
+                        <p style="margin:2px 0 0 0;">Tel: <span style="color:#003399; font-weight:bold;">${config.phone}</span></p>
                         <p style="margin:0;">Email: ${config.email}</p>
                     </div>
                 </div>
@@ -265,17 +294,17 @@
                 <div style="border-top:2.5px solid #cc0000; margin-bottom:15px;"></div>
 
                 <h1 style="text-align:center; color:#003399; font-size:26px; font-weight:900; margin:0; letter-spacing:1px;">BẢNG BÁO GIÁ</h1>
-                <p style="text-align:center; font-style:italic; font-size:14px; margin-bottom:25px; color:#64748b;">${dStr}</p>
+                <p style="text-align:center; font-style:italic; font-size:14px; margin-bottom:25px;">${dStr}</p>
 
-                <div style="margin-bottom:20px; font-size:14.5px; line-height:1.6; color:#1e293b;">
-                    <h3 style="color:#003399; font-weight:bold; margin-bottom:6px; border-left:4px solid #003399; padding-left:10px;">I. THÔNG TIN KHÁCH HÀNG</h3>
+                <div style="margin-bottom:15px; font-size:14.5px; line-height:1.6;">
+                    <h3 style="color:#003399; font-weight:bold; margin-bottom:6px; border-left:4px solid #003399; padding-left:10px; font-size:13px; text-transform:uppercase;">I. THÔNG TIN KHÁCH HÀNG</h3>
                     <p style="margin:0 0 4px 0;"><strong>Khách hàng:</strong> <span style="text-transform:uppercase; font-weight:bold;">${document.getElementById('cust-name').value || "..."}</span></p>
                     <p style="margin:0 0 4px 0;"><strong>Địa chỉ:</strong> ${document.getElementById('cust-addr').value || "..."}</p>
                     <p style="margin:0;"><strong>Điện thoại/MST:</strong> ${document.getElementById('cust-phone').value || "..."}</p>
                 </div>
 
                 <div style="margin-bottom:15px; font-size:14.5px;">
-                    <h3 style="color:#003399; font-weight:bold; margin-bottom:8px; border-left:4px solid #003399; padding-left:10px;">II. CHI TIẾT BÁO GIÁ</h3>
+                    <h3 style="color:#003399; font-weight:bold; margin-bottom:8px; border-left:4px solid #003399; padding-left:10px; font-size:13px; text-transform:uppercase;">II. CHI TIẾT BÁO GIÁ</h3>
                     <table class="table-custom">
                         <thead>
                             <tr>
@@ -290,8 +319,8 @@
                         <tbody>
                             ${items.map((it, idx) => `
                                 <tr>
-                                    <td style="text-align:center; color:#64748b;">${idx+1}</td>
-                                    <td style="font-weight:bold; color:#0f172a;">${it.name}</td>
+                                    <td style="text-align:center;">${idx+1}</td>
+                                    <td style="font-weight:bold;">${it.name}</td>
                                     <td style="text-align:center;">${it.unit}</td>
                                     <td style="text-align:center; font-weight:bold;">${it.qty}</td>
                                     <td style="text-align:right;">${it.price.toLocaleString('vi-VN')}</td>
@@ -303,46 +332,42 @@
                 </div>
 
                 <div style="text-align:right; margin-bottom:25px; padding-top:10px;">
-                    ${dPct > 0 ? `<p style="font-size:12px; color:#ef4444; margin:0;">Chiết khấu (${dPct}%): -${Math.round(subtotal*dPct/100).toLocaleString('vi-VN')} đ</p>` : ''}
+                    ${dPct > 0 ? `<p style="font-size:12px; color:#ef4444; margin:0;">Chiết khấu (${dPct}%): -${Math.round(sub*dPct/100).toLocaleString('vi-VN')} đ</p>` : ''}
                     <h3 style="color:#cc0000; font-size:20px; font-weight:900; margin:5px 0 0 0;">TỔNG CỘNG: ${total.toLocaleString('vi-VN')} VNĐ</h3>
                     <p style="font-style:italic; font-size:13px; margin:5px 0 0 0; color:#475569;">(Bằng chữ: ${docTien(total)})</p>
                 </div>
 
                 <div style="display:flex; justify-content:space-between; font-size:13.5px; line-height:1.5;">
-                    <div style="width:62%;">
-                        <p style="font-weight:bold; text-decoration:underline; color:#1e293b;">Ghi chú & Điều khoản:</p>
-                        <ul style="margin:5px 0; padding-left:18px; list-style-type:disc; color:#334155;">
+                    <div style="width:65%;">
+                        <p style="font-weight:bold; text-decoration:underline;">Ghi chú & Điều khoản:</p>
+                        <ul style="margin:5px 0; padding-left:18px; list-style-type:disc; color:#000;">
                             <li>Giá trên đã bao gồm ${config.vat}% VAT.</li>
                             <li>Thanh toán trước khi nhận hàng.</li>
                             <li>Báo giá có hiệu lực trong vòng 15 ngày.</li>
                         </ul>
-                        <p style="font-weight:bold; margin-top:12px; color:#1e293b;">Thông tin chuyển khoản:</p>
-                        <p style="margin:2px 0 0 0; color:#475569;">${config.bank}</p>
-                        <p style="margin:2px 0 0 0; color:#003399; font-weight:900; font-size:17px; letter-spacing:0.5px;">STK: ${config.stk}</p>
-                        <p style="margin:2px 0 0 0; font-weight:bold; text-transform:uppercase; color:#334155;">${config.name}</p>
+                        <p style="font-weight:bold; margin-top:12px;">Thông tin chuyển khoản:</p>
+                        <p style="margin:0;">${config.bank}</p>
+                        <p style="margin:0; color:#003399; font-weight:900; font-size:17px;">STK: ${config.stk}</p>
+                        <p style="margin:0; font-weight:bold; text-transform:uppercase;">${config.name}</p>
                     </div>
-                    <div style="text-align:center; width:35%;">
-                        <p style="font-style:italic; color:#64748b; font-size:12px;">${dStr}</p>
+                    <div style="text-align:center; width:30%;">
+                        <p style="font-style:italic;">${dStr}</p>
                         <p style="color:#003399; font-weight:900; font-size:16px; margin:5px 0 70px 0;">GIÁM ĐỐC</p>
-                        <p style="font-weight:bold; text-transform:uppercase; font-size:15px; border-top:1px solid #ddd; display:inline-block; padding-top:5px; min-width:160px;">${config.director}</p>
-                        <p style="font-style:italic; font-size:11px; color:#94a3b8; margin-top:4px;">(Ký tên và đóng dấu)</p>
+                        <p style="font-weight:bold; text-transform:uppercase; font-size:15px; border-top:1px solid #000; display:inline-block; padding-top:5px; min-width:160px;">${config.director}</p>
+                        <p style="font-style:italic; font-size:11px; color:#666; margin-top:4px;">(Ký tên và đóng dấu)</p>
                     </div>
                 </div>
 
-                <div style="text-align:center; margin-top:40px; border-top:1px dashed #eee; padding-top:15px;">
-                    <p style="font-style:italic; font-size:13px; color:#64748b;">Xin chân thành cảm ơn Quý khách hàng!</p>
+                <div style="text-align:center; margin-top:40px;">
+                    <p style="font-style:italic; font-size:13px; color:#000;">Xin chân thành cảm ơn Quý khách hàng!</p>
                 </div>
             `;
         }
 
-        // --- CẤU HÌNH HỆ THỐNG ---
         function uploadLogo(input) {
             const file = input.files[0];
             const reader = new FileReader();
-            reader.onload = (e) => {
-                logoBase64 = e.target.result;
-                localStorage.setItem('pt_logo_64', logoBase64);
-            };
+            reader.onload = (e) => { logoBase64 = e.target.result; localStorage.setItem('pt_logo_64', logoBase64); };
             reader.readAsDataURL(file);
         }
 
@@ -358,30 +383,17 @@
             document.getElementById('set-vat').value = config.vat;
             document.getElementById('modal-settings').classList.remove('hidden');
         }
-
         function closeSettings() { document.getElementById('modal-settings').classList.add('hidden'); }
-
         function saveSettings() {
             config = {
-                name: document.getElementById('set-name').value,
-                tax: document.getElementById('set-tax').value,
-                addr: document.getElementById('set-addr').value,
-                branch: document.getElementById('set-branch').value,
-                phone: document.getElementById('set-phone').value,
-                email: document.getElementById('set-email').value,
-                bank: document.getElementById('set-bank').value,
-                stk: document.getElementById('set-stk').value,
-                director: "BÙI NHỰT PHƯƠNG",
-                vat: parseInt(document.getElementById('set-vat').value) || 10
+                name: document.getElementById('set-name').value, tax: document.getElementById('set-tax').value,
+                addr: document.getElementById('set-addr').value, branch: document.getElementById('set-branch').value,
+                phone: document.getElementById('set-phone').value, email: document.getElementById('set-email').value,
+                bank: document.getElementById('set-bank').value, stk: document.getElementById('set-stk').value,
+                vat: parseInt(document.getElementById('set-vat').value) || 10, director: "BÙI NHỰT PHƯƠNG"
             };
             localStorage.setItem('pt_config', JSON.stringify(config));
-            closeSettings();
-            calculateAll();
-        }
-
-        function exportPDF() {
-            // Sử dụng tính năng In của trình duyệt là cách tốt nhất để giữ đúng định dạng A4.
-            window.print();
+            closeSettings(); calculateAll();
         }
     </script>
 </body>
