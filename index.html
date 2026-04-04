@@ -15,7 +15,7 @@
         .table-custom { width: 100%; border-collapse: collapse; border: 1px solid black; }
         .table-custom th, .table-custom td { border: 1px solid black !important; padding: 7px 8px; font-size: 13px; color: black; }
         
-        /* MÀU NỀN XANH NHẠT CHUẨN MẪU TỪ ẢNH CỦA ANH */
+        /* MÀU NỀN XANH NHẠT CHUẨN MẪU (KHÔNG VIẾT HOA TẤT CẢ CHỮ) */
         .table-custom th { background-color: #e6f0fa !important; font-weight: bold; text-transform: none; text-align: center; }
         
         .input-clean { border: none; border-bottom: 1px solid #e2e8f0; outline: none; width: 100%; padding: 4px; background: transparent; }
@@ -68,8 +68,8 @@
     <div id="preview-mode" class="hidden bg-slate-300 py-10 min-h-screen">
         <div class="max-w-[210mm] mx-auto mb-8 flex flex-col gap-3 px-4">
             <div id="zalo-warning" class="hidden bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded shadow-md text-sm font-bold">
-                <i class="fa-solid fa-triangle-exclamation mr-1"></i> LƯU Ý QUAN TRỌNG:<br>
-                Zalo chặn tải file trên điện thoại. Hãy bấm vào <b>dấu 3 chấm (...) góc màn hình</b> -> Chọn <b>"Mở bằng Safari / Chrome"</b> thì mới ấn tải file PDF được anh nhé!
+                <i class="fa-solid fa-triangle-exclamation mr-1"></i> LƯU Ý TỪ HỆ THỐNG:<br>
+                Zalo có thể chặn việc tải file. Bạn hãy bấm vào <b>dấu 3 chấm (...) góc màn hình</b> -> Chọn <b>"Mở bằng Safari / Chrome"</b> để tải file PDF về máy thành công bạn nhé!
             </div>
 
             <button onclick="exportNativePDF()" class="w-full bg-red-600 hover:bg-red-700 text-white py-4 rounded-2xl font-black uppercase shadow-xl transition-all active:scale-95 text-lg tracking-widest flex items-center justify-center">
@@ -139,7 +139,7 @@
             document.getElementById('quote-date').value = new Date().toISOString().split('T')[0];
             renderItems(); calculateAll();
             
-            // CẢNH BÁO MẠNH NẾU ĐANG Ở TRONG ZALO (NGUYÊN NHÂN GÂY LỖI)
+            // CẢNH BÁO NẾU ĐANG Ở TRONG ZALO (NGUYÊN NHÂN GÂY LỖI)
             if (/Zalo/i.test(navigator.userAgent)) {
                 document.getElementById('zalo-warning').classList.remove('hidden');
             }
@@ -233,14 +233,7 @@
                 <div style="margin-bottom:15px;">
                     <h3 style="color:#003399; font-weight:bold; margin-bottom:5px; font-size:13px; text-transform:uppercase;">II. CHI TIẾT BÁO GIÁ</h3>
                     <table class="table-custom">
-                        <thead><tr>
-                            <th style="width:40px; text-align:center;">STT</th>
-                            <th style="text-align:left;">Tên hàng hóa / Quy cách</th>
-                            <th style="width:60px; text-align:center;">ĐVT</th>
-                            <th style="width:50px; text-align:center;">SL</th>
-                            <th style="width:100px; text-align:right;">Đơn giá</th>
-                            <th style="width:110px; text-align:right;">Thành tiền</th>
-                        </tr></thead>
+                        <thead><tr><th style="width:40px; text-align:center;">STT</th><th style="text-align:left;">Tên hàng hóa / Quy cách</th><th style="width:60px; text-align:center;">ĐVT</th><th style="width:50px; text-align:center;">SL</th><th style="width:100px; text-align:right;">Đơn giá</th><th style="width:110px; text-align:right;">Thành tiền</th></tr></thead>
                         <tbody>
                             ${items.map((it, idx) => `<tr><td style="text-align:center;">${idx+1}</td><td style="font-weight:bold;">${it.name}</td><td style="text-align:center;">${it.unit}</td><td style="text-align:center; font-weight:bold;">${it.qty}</td><td style="text-align:right;">${it.price.toLocaleString('vi-VN')}</td><td style="text-align:right; font-weight:bold; color:#003399;">${(it.qty*it.price).toLocaleString('vi-VN')}</td></tr>`).join('')}
                         </tbody>
@@ -269,6 +262,7 @@
                         <p style="font-style:italic; font-size:13px;">${dStr}</p>
                         <p style="color:#003399; font-weight:900; font-size:16px; margin:5px 0 70px 0;">GIÁM ĐỐC</p>
                         <p style="font-weight:bold; text-transform:uppercase; font-size:14px; border-top:1px solid #333; padding-top:5px; display:inline-block; min-width:180px;">${config.director}</p>
+                        <p style="font-style:italic; font-size:11px; color:#666; margin-top:3px;">(Ký và đóng dấu)</p>
                     </div>
                 </div>
                 
@@ -276,14 +270,8 @@
             `;
         }
 
-        // --- HÀM TẢI FILE TRỰC TIẾP (CHUẨN 100% CHO IOS & ANDROID) ---
+        // HÀM XUẤT PDF TRỰC TIẾP KHÔNG DÙNG ALERT
         function exportNativePDF() {
-            // Chặn tải trên Zalo để tránh lỗi "Không tìm thấy ứng dụng"
-            if (/Zalo|FBAV/i.test(navigator.userAgent)) {
-                alert("⛔ BẠN ĐANG Ở TRONG ZALO!\n\nZalo KHÔNG CHO PHÉP tải file PDF về điện thoại.\n\n👉 Anh vui lòng bấm vào nút [ ⋯ ] ở góc màn hình rồi chọn 'Mở bằng Safari' hoặc 'Mở bằng Chrome' để tải nhé!");
-                return;
-            }
-
             try {
                 const d = new Date(document.getElementById('quote-date').value);
                 const dStr = `Ngày ${d.getDate()} tháng ${d.getMonth()+1} năm ${d.getFullYear()}`;
@@ -391,26 +379,20 @@
                         },
                         { text: 'Xin chân thành cảm ơn Quý khách hàng!', italics: true, fontSize: 10, alignment: 'center', margin: [0, 40, 0, 0] }
                     ],
-                    // FIX MÀU XANH NHẠT CHUẨN TRONG FILE PDF XUẤT RA
+                    // MÀU NỀN XANH NHẠT CHO HEADER FILE PDF
                     styles: { tableHeader: { bold: true, fontSize: 11, color: 'black', fillColor: '#e6f0fa', alignment: 'center', margin: [0, 5] } },
                     defaultStyle: { font: 'Roboto' }
                 };
 
                 let rawName = document.getElementById('cust-name').value || "KhachHang";
                 let safeName = rawName.replace(/[^a-zA-Z0-9\s]/g, "").replace(/\s+/g, "_");
-                
-                // Lệnh thuần túy duy nhất để tải file trên Chrome, Safari, PC.
-                pdfMake.createPdf(docDefinition).download(`BaoGia_${safeName}.pdf`);
-                
-                // Cảnh báo cho điện thoại biết vị trí lưu
-                if (/Android|iPhone|iPad/i.test(navigator.userAgent)) {
-                    setTimeout(() => {
-                        alert("✅ Đã phát lệnh tải file xuống máy!\n\n- Trên iPhone: Vào ứng dụng 'Tệp' (Files) để lấy.\n- Trên Android: Vào mục 'Tải xuống' (Downloads).");
-                    }, 1000);
-                }
+                let fileName = `BaoGia_${safeName}.pdf`;
 
+                // Tải trực tiếp âm thầm
+                pdfMake.createPdf(docDefinition).download(fileName);
             } catch (err) {
-                alert("Đã xảy ra lỗi: " + err.message);
+                // Chỉ thông báo nếu có lỗi thực sự xảy ra
+                alert("Đã xảy ra lỗi khi xuất file. Bạn vui lòng thử mở trang web bằng trình duyệt Safari hoặc Chrome nhé.");
             }
         }
 
