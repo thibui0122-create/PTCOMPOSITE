@@ -64,8 +64,8 @@
 
     <div id="preview-mode" class="hidden bg-slate-300 py-10 min-h-screen">
         <div class="max-w-[210mm] mx-auto mb-8 flex gap-4 px-4">
-            <button onclick="exportNativePDF()" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-4 rounded-2xl font-black uppercase shadow-xl transition-all active:scale-95">
-                <i class="fa-solid fa-download mr-2"></i> BẤM VÀO ĐÂY ĐỂ TẢI FILE PDF (TẢI THẲNG VỀ MÁY)
+            <button onclick="exportNativePDF()" class="w-full bg-red-600 hover:bg-red-700 text-white py-4 rounded-2xl font-black uppercase shadow-xl transition-all active:scale-95 text-lg tracking-widest">
+                <i class="fa-solid fa-download mr-2"></i> TẢI THẲNG PDF VỀ MÁY
             </button>
         </div>
         <div id="preview-a4" class="a4-page mx-auto shadow-2xl">
@@ -80,11 +80,11 @@
                 <label class="text-[10px] text-slate-500 uppercase">Tải Logo Công ty:</label>
                 <input type="file" accept="image/*" onchange="uploadLogo(this)" class="w-full border p-2 rounded text-xs bg-white">
                 <input type="text" id="set-name" placeholder="Tên Công Ty" class="w-full border p-2.5 rounded shadow-sm">
-                <input type="text" id="set-tax" placeholder="MST" class="w-full border p-2.5 rounded shadow-sm">
+                <input type="text" id="set-tax" placeholder="Mã số thuế" class="w-full border p-2.5 rounded shadow-sm">
                 <input type="text" id="set-addr" placeholder="Trụ sở chính" class="w-full border p-2.5 rounded shadow-sm">
-                <input type="text" id="set-branch" placeholder="Chi nhánh (Nếu không có thì để trống)" class="w-full border p-2.5 rounded shadow-sm text-blue-700">
+                <input type="text" id="set-branch" placeholder="Chi nhánh" class="w-full border p-2.5 rounded shadow-sm text-blue-700">
                 <input type="text" id="set-phone" placeholder="Số điện thoại" class="w-full border p-2.5 rounded shadow-sm">
-                <input type="text" id="set-email" placeholder="Email (Nếu không có thì để trống)" class="w-full border p-2.5 rounded shadow-sm">
+                <input type="text" id="set-email" placeholder="Email" class="w-full border p-2.5 rounded shadow-sm">
                 <textarea id="set-bank" placeholder="Ngân hàng" rows="2" class="w-full border p-2.5 rounded shadow-sm"></textarea>
                 <input type="text" id="set-stk" placeholder="Số tài khoản" class="w-full border p-2.5 rounded shadow-sm font-black text-blue-700">
                 <input type="number" id="set-vat" placeholder="Thuế VAT (%)" class="w-full border p-2.5 rounded shadow-sm">
@@ -107,19 +107,18 @@
             { n: "Công thợ thay nhớt/bảo trì", u: "Công", p: 1200000 }
         ];
 
-        // LẤY CONFIG, XỬ LÝ LỖI UNDEFINED NẾU BỘ NHỚ TRỐNG
         let savedConfig = JSON.parse(localStorage.getItem('pt_config')) || {};
         let config = {
             name: savedConfig.name || "CÔNG TY TNHH MTV PHƯƠNG THANH COMPOSITE",
             tax: savedConfig.tax || "1702233007",
             addr: savedConfig.addr || "506A, Ấp Tân Phước, Xã Châu Thành, Tỉnh An Giang",
-            branch: savedConfig.branch || "", // Mặc định rỗng để không bị undefined
+            branch: savedConfig.branch || "Đường Nguyễn Văn Cừ, Tổ 6, Khu Phố 4, Đặc Khu Phú Quốc, Tỉnh An Giang",
             phone: savedConfig.phone || "0949.878.208 - 0942.959.263",
-            email: savedConfig.email || "", // Mặc định rỗng
+            email: savedConfig.email || "phuongthanhcomposite@gmail.com",
             bank: savedConfig.bank || "Ngân hàng MB - Ngân hàng Quân đội, chi nhánh Rạch Giá, An Giang",
             stk: savedConfig.stk || "242666686868",
             director: savedConfig.director || "BÙI NHỰT PHƯƠNG",
-            vat: savedConfig.vat !== undefined ? savedConfig.vat : 10
+            vat: savedConfig.vat !== undefined ? savedConfig.vat : 8
         };
         let logoBase64 = localStorage.getItem('pt_logo_64') || "";
         let items = [{ id: 1, name: "Nhớt 4 thì - can 4 lít", unit: "Can", qty: 4, price: 700000 }];
@@ -181,13 +180,11 @@
             window.scrollTo(0,0);
         }
 
-        // TẠO GIAO DIỆN PREVIEW TRÊN WEB
         function syncPreview() {
             const d = new Date(document.getElementById('quote-date').value);
             const dStr = `Ngày ${d.getDate()} tháng ${d.getMonth()+1} năm ${d.getFullYear()}`;
             let total = items.reduce((s, i) => s + (i.qty * i.price), 0);
 
-            // Kiểm tra xem có chi nhánh và email không để hiển thị
             let branchHtml = config.branch ? `<p style="margin:0;">CN: ${config.branch}</p>` : "";
             let emailHtml = config.email ? `<p style="margin:0;">Email: ${config.email}</p>` : "";
 
@@ -236,18 +233,19 @@
                         <p style="font-weight:bold; text-decoration:underline; font-size:15px; margin-bottom:5px;">Ghi chú & Điều khoản:</p>
                         <ul style="margin:0; padding-left:20px; list-style-type:disc;">
                             <li>Giá trên đã bao gồm ${config.vat}% VAT.</li>
-                            <li>Thanh toán trước khi nhận hàng.</li>
+                            <li>Thanh toán chia làm 2 đợt.</li>
                             <li>Báo giá có hiệu lực 15 ngày.</li>
                         </ul>
                         <p style="font-weight:bold; font-style:italic; margin-top:15px; font-size:15px;">Thông tin chuyển khoản:</p>
                         <p style="margin:2px 0;">${config.bank}</p>
                         <p style="margin:2px 0;"><strong>Đơn vị thụ hưởng:</strong> <span style="text-transform:uppercase;">${config.name}</span></p>
-                        <p style="margin:2px 0; color:#003399; font-size:16px; font-weight:bold;">STK: ${config.stk}</p>
+                        <p style="margin:2px 0; color:#003399; font-size:16px;">STK: ${config.stk}</p>
                     </div>
                     <div style="text-align:center; width:35%;">
                         <p style="font-style:italic; font-size:13px;">${dStr}</p>
                         <p style="color:#003399; font-weight:900; font-size:16px; margin:5px 0 70px 0;">GIÁM ĐỐC</p>
                         <p style="font-weight:bold; text-transform:uppercase; font-size:14px; border-top:1px solid #333; padding-top:5px; display:inline-block; min-width:180px;">${config.director}</p>
+                        <p style="font-style:italic; font-size:11px; color:#666; margin-top:3px;">(Ký và đóng dấu)</p>
                     </div>
                 </div>
                 
@@ -255,7 +253,7 @@
             `;
         }
 
-        // HÀM TẠO PDF BẰNG CODE (TẢI THẲNG VỀ MÁY, NÉT CĂNG)
+        // HÀM XUẤT NATIVE PDF TRỰC TIẾP KHÔNG QUA PRINT
         function exportNativePDF() {
             const d = new Date(document.getElementById('quote-date').value);
             const dStr = `Ngày ${d.getDate()} tháng ${d.getMonth()+1} năm ${d.getFullYear()}`;
@@ -283,7 +281,6 @@
                 ]);
             });
 
-            // Khối thông tin công ty bên phải
             let companyInfoStack = [
                 { text: config.name, color: '#cc0000', bold: true, fontSize: 13, alignment: 'right', margin: [0, 0, 0, 2] },
                 { text: `MST: ${config.tax}`, fontSize: 9, alignment: 'right' },
@@ -297,26 +294,22 @@
                 pageSize: 'A4',
                 pageMargins: [40, 40, 40, 40],
                 content: [
-                    // Header
                     {
                         columns: [
                             logoBase64 ? { image: logoBase64, width: 100 } : { text: 'PHƯƠNG THANH', width: 100, color: '#ccc', bold: true, margin: [0, 10, 0, 0] },
                             { stack: companyInfoStack }
                         ]
                     },
-                    // Kẻ vạch đỏ
                     { canvas: [{ type: 'line', x1: 0, y1: 5, x2: 515, y2: 5, lineWidth: 2, lineColor: '#cc0000' }], margin: [0, 5, 0, 15] },
                     
                     { text: 'BẢNG BÁO GIÁ', color: '#003399', fontSize: 20, bold: true, alignment: 'center', characterSpacing: 1 },
                     { text: dStr, italics: true, fontSize: 11, alignment: 'center', margin: [0, 0, 0, 20] },
 
-                    // Info Khách hàng
                     { text: 'I. THÔNG TIN KHÁCH HÀNG', color: '#003399', fontSize: 11, bold: true, margin: [0, 0, 0, 5] },
                     { text: [{text: 'Khách hàng: ', bold: true}, {text: (document.getElementById('cust-name').value || "...").toUpperCase()}], fontSize: 11, margin: [0, 2] },
                     { text: [{text: 'Địa chỉ: ', bold: true}, {text: document.getElementById('cust-addr').value || "..."}], fontSize: 11, margin: [0, 2] },
                     { text: [{text: 'Điện thoại/MST: ', bold: true}, {text: document.getElementById('cust-phone').value || "..."}], fontSize: 11, margin: [0, 2, 0, 15] },
 
-                    // Bảng giá
                     { text: 'II. CHI TIẾT BÁO GIÁ', color: '#003399', fontSize: 11, bold: true, margin: [0, 0, 0, 5] },
                     {
                         table: {
@@ -332,11 +325,9 @@
                         }
                     },
 
-                    // Tổng tiền
                     { text: `TỔNG CỘNG: ${total.toLocaleString('vi-VN')} VNĐ`, color: '#cc0000', fontSize: 15, bold: true, alignment: 'right', margin: [0, 20, 0, 0] },
                     { text: `(Bằng chữ: ${docTien(total)})`, italics: true, fontSize: 10, color: '#444', alignment: 'right', margin: [0, 2, 0, 20] },
 
-                    // Footer Grid
                     {
                         columns: [
                             {
@@ -346,7 +337,7 @@
                                     {
                                         ul: [
                                             `Giá trên đã bao gồm ${config.vat}% VAT.`,
-                                            `Thanh toán trước khi nhận hàng.`,
+                                            `Thanh toán chia làm 2 đợt.`,
                                             `Báo giá có hiệu lực 15 ngày.`
                                         ],
                                         fontSize: 11, margin: [0, 0, 0, 10]
@@ -370,14 +361,14 @@
                     },
                     { text: 'Xin chân thành cảm ơn Quý khách hàng!', italics: true, fontSize: 10, alignment: 'center', margin: [0, 40, 0, 0] }
                 ],
-                styles: {
-                    tableHeader: { bold: true, fontSize: 11, color: 'black', fillColor: '#f1f5f9', alignment: 'center', margin: [0, 5] }
-                },
+                styles: { tableHeader: { bold: true, fontSize: 11, color: 'black', fillColor: '#f1f5f9', alignment: 'center', margin: [0, 5] } },
                 defaultStyle: { font: 'Roboto' }
             };
 
-            // Tải file thẳng về máy
-            pdfMake.createPdf(docDefinition).download(`Bao_Gia_${(document.getElementById('cust-name').value || "PhuongThanh").replace(/\s+/g, '_')}.pdf`);
+            // LỆNH DUY NHẤT TẢI FILE PDF (KHÔNG HIỆN BẢNG IN)
+            let rawName = document.getElementById('cust-name').value || "PhuongThanh";
+            let safeName = rawName.replace(/[^a-zA-Z0-9]/g, "_");
+            pdfMake.createPdf(docDefinition).download(`BaoGia_${safeName}.pdf`);
         }
 
         function uploadLogo(input) {
@@ -388,16 +379,12 @@
         }
 
         function showSettings() {
-            ['name','tax','addr','branch','phone','email','bank','stk','vat','director'].forEach(k => {
-                document.getElementById('set-'+k).value = config[k];
-            });
+            ['name','tax','addr','branch','phone','email','bank','stk','vat','director'].forEach(k => { document.getElementById('set-'+k).value = config[k]; });
             document.getElementById('modal-settings').classList.remove('hidden');
         }
         function closeSettings() { document.getElementById('modal-settings').classList.add('hidden'); }
         function saveSettings() {
-            ['name','tax','addr','branch','phone','email','bank','stk','vat','director'].forEach(k => {
-                config[k] = document.getElementById('set-'+k).value;
-            });
+            ['name','tax','addr','branch','phone','email','bank','stk','vat','director'].forEach(k => { config[k] = document.getElementById('set-'+k).value; });
             localStorage.setItem('pt_config', JSON.stringify(config));
             closeSettings(); calculateAll();
         }
