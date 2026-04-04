@@ -14,7 +14,10 @@
         .a4-page { width: 210mm; min-height: 296mm; padding: 12mm 15mm; margin: 20px auto; background: white; box-shadow: 0 0 20px rgba(0,0,0,0.15); color: black; }
         .table-custom { width: 100%; border-collapse: collapse; border: 1px solid black; }
         .table-custom th, .table-custom td { border: 1px solid black !important; padding: 7px 8px; font-size: 13px; color: black; }
-        .table-custom th { background-color: #e2efff !important; font-weight: bold; text-transform: uppercase; }
+        
+        /* ĐÃ SỬA MÀU NỀN XANH NHẠT VÀ CHỮ KHÔNG VIẾT HOA TOÀN BỘ THEO MẪU */
+        .table-custom th { background-color: #e6f0fa !important; font-weight: bold; }
+        
         .input-clean { border: none; border-bottom: 1px solid #e2e8f0; outline: none; width: 100%; padding: 4px; background: transparent; }
         .input-clean:focus { border-bottom: 2px solid #2563eb; }
     </style>
@@ -64,8 +67,8 @@
 
     <div id="preview-mode" class="hidden bg-slate-300 py-10 min-h-screen">
         <div class="max-w-[210mm] mx-auto mb-8 flex gap-4 px-4">
-            <button onclick="exportNativePDF()" class="w-full bg-red-600 hover:bg-red-700 text-white py-4 rounded-2xl font-black uppercase shadow-xl transition-all active:scale-95 text-lg tracking-widest">
-                <i class="fa-solid fa-download mr-2"></i> TẢI THẲNG PDF VỀ MÁY
+            <button onclick="exportNativePDF()" class="w-full bg-red-600 hover:bg-red-700 text-white py-4 rounded-2xl font-black uppercase shadow-xl transition-all active:scale-95 text-lg tracking-widest" id="btn-export-text">
+                <i class="fa-solid fa-file-pdf mr-2"></i> XỬ LÝ FILE PDF...
             </button>
         </div>
         <div id="preview-a4" class="a4-page mx-auto shadow-2xl">
@@ -118,7 +121,7 @@
             bank: savedConfig.bank || "Ngân hàng MB - Ngân hàng Quân đội, chi nhánh Rạch Giá, An Giang",
             stk: savedConfig.stk || "242666686868",
             director: savedConfig.director || "BÙI NHỰT PHƯƠNG",
-            vat: savedConfig.vat !== undefined ? savedConfig.vat : 10
+            vat: savedConfig.vat !== undefined ? savedConfig.vat : 8
         };
         let logoBase64 = localStorage.getItem('pt_logo_64') || "";
         let items = [{ id: 1, name: "Nhớt 4 thì - can 4 lít", unit: "Can", qty: 4, price: 700000 }];
@@ -126,6 +129,14 @@
         window.onload = () => {
             document.getElementById('quote-date').value = new Date().toISOString().split('T')[0];
             renderItems(); calculateAll();
+
+            // KIỂM TRA THIẾT BỊ ĐỂ HIỂN THỊ NÚT TƯƠNG ỨNG
+            let isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            if (isMobile) {
+                document.getElementById('btn-export-text').innerHTML = '<i class="fa-solid fa-share-nodes mr-2"></i> CHIA SẺ FILE QUA ZALO';
+            } else {
+                document.getElementById('btn-export-text').innerHTML = '<i class="fa-solid fa-download mr-2"></i> TẢI PDF VỀ MÁY TÍNH';
+            }
         };
 
         function renderItems() {
@@ -216,7 +227,14 @@
                 <div style="margin-bottom:15px;">
                     <h3 style="color:#003399; font-weight:bold; margin-bottom:5px; font-size:13px; text-transform:uppercase;">II. CHI TIẾT BÁO GIÁ</h3>
                     <table class="table-custom">
-                        <thead><tr><th style="width:40px; text-align:center;">STT</th><th style="text-align:left;">Tên hàng hóa / Quy cách</th><th style="width:60px; text-align:center;">ĐVT</th><th style="width:50px; text-align:center;">SL</th><th style="width:100px; text-align:right;">Đơn giá</th><th style="width:110px; text-align:right;">Thành tiền</th></tr></thead>
+                        <thead><tr>
+                            <th style="width:40px; text-align:center;">STT</th>
+                            <th style="text-align:left;">Tên hàng hóa / Quy cách</th>
+                            <th style="width:60px; text-align:center;">ĐVT</th>
+                            <th style="width:50px; text-align:center;">SL</th>
+                            <th style="width:100px; text-align:right;">Đơn giá</th>
+                            <th style="width:110px; text-align:right;">Thành tiền</th>
+                        </tr></thead>
                         <tbody>
                             ${items.map((it, idx) => `<tr><td style="text-align:center;">${idx+1}</td><td style="font-weight:bold;">${it.name}</td><td style="text-align:center;">${it.unit}</td><td style="text-align:center; font-weight:bold;">${it.qty}</td><td style="text-align:right;">${it.price.toLocaleString('vi-VN')}</td><td style="text-align:right; font-weight:bold; color:#003399;">${(it.qty*it.price).toLocaleString('vi-VN')}</td></tr>`).join('')}
                         </tbody>
@@ -253,7 +271,7 @@
             `;
         }
 
-        // HÀM XUẤT PDF CHỐNG "KHÔNG TÌM THẤY ỨNG DỤNG"
+        // TÍNH NĂNG XUẤT PDF PHÂN BIỆT ĐIỆN THOẠI VÀ MÁY TÍNH
         function exportNativePDF() {
             const d = new Date(document.getElementById('quote-date').value);
             const dStr = `Ngày ${d.getDate()} tháng ${d.getMonth()+1} năm ${d.getFullYear()}`;
@@ -262,11 +280,11 @@
             let tableBody = [
                 [
                     { text: 'STT', style: 'tableHeader' },
-                    { text: 'TÊN HÀNG HÓA / QUY CÁCH', style: 'tableHeader', alignment: 'left' },
+                    { text: 'Tên hàng hóa / Quy cách', style: 'tableHeader', alignment: 'left' },
                     { text: 'ĐVT', style: 'tableHeader' },
                     { text: 'SL', style: 'tableHeader' },
-                    { text: 'ĐƠN GIÁ', style: 'tableHeader', alignment: 'right' },
-                    { text: 'THÀNH TIỀN', style: 'tableHeader', alignment: 'right' }
+                    { text: 'Đơn giá', style: 'tableHeader', alignment: 'right' },
+                    { text: 'Thành tiền', style: 'tableHeader', alignment: 'right' }
                 ]
             ];
 
@@ -361,31 +379,51 @@
                     },
                     { text: 'Xin chân thành cảm ơn Quý khách hàng!', italics: true, fontSize: 10, alignment: 'center', margin: [0, 40, 0, 0] }
                 ],
-                styles: { tableHeader: { bold: true, fontSize: 11, color: 'black', fillColor: '#e2efff', alignment: 'center', margin: [0, 5] } },
+                // MÀU NỀN XANH NHẠT CHO BẢNG TRONG PDF
+                styles: { tableHeader: { bold: true, fontSize: 11, color: 'black', fillColor: '#e6f0fa', alignment: 'center', margin: [0, 5] } },
                 defaultStyle: { font: 'Roboto' }
             };
 
-            let rawName = document.getElementById('cust-name').value || "PhuongThanh";
+            let rawName = document.getElementById('cust-name').value || "KhachHang";
             let safeName = rawName.replace(/[^a-zA-Z0-9]/g, "_");
             let fileName = `BaoGia_${safeName}.pdf`;
 
-            // PHƯƠNG PHÁP BASE64 URI CHỐNG CHẶN TẢI XUỐNG CỦA ĐIỆN THOẠI
-            pdfMake.createPdf(docDefinition).getBase64((data) => {
-                const base64Uri = 'data:application/pdf;base64,' + data;
+            // THUẬT TOÁN KIỂM TRA: NẾU LÀ ĐIỆN THOẠI THÌ DÙNG CHỨC NĂNG CHIA SẺ, MÁY TÍNH THÌ TẢI XUỐNG
+            const pdfDocGenerator = pdfMake.createPdf(docDefinition);
+            
+            pdfDocGenerator.getBlob((blob) => {
+                let isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
                 
-                const a = document.createElement('a');
-                a.style.display = 'none';
-                a.href = base64Uri;
-                a.download = fileName;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                
-                // Hiện thông báo hướng dẫn tìm file
-                setTimeout(() => {
-                    alert("Đã tải file " + fileName + " thành công!\n\nAnh vui lòng kiểm tra trong ứng dụng 'Tệp' (Files) trên iPhone, hoặc mục 'Tải xuống' (Downloads) trên Android nhé.");
-                }, 800);
+                if (isMobile && navigator.canShare) {
+                    // ĐIỆN THOẠI: Bật bảng chia sẻ lên để người dùng chọn Zalo
+                    const file = new File([blob], fileName, { type: 'application/pdf' });
+                    navigator.share({
+                        files: [file],
+                        title: 'Báo Giá Phương Thanh Composite'
+                    }).catch(err => {
+                        // Nếu khách bấm hủy chia sẻ, tiến hành tải file xuống dự phòng
+                        fallbackDownload(blob, fileName);
+                    });
+                } else {
+                    // MÁY TÍNH: Tải thẳng về máy
+                    fallbackDownload(blob, fileName);
+                }
             });
+        }
+
+        // HÀM TẢI FILE DỰ PHÒNG CHO MÁY TÍNH
+        function fallbackDownload(blob, fileName) {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(() => {
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            }, 200);
         }
 
         function uploadLogo(input) {
