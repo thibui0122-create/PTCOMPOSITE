@@ -813,35 +813,24 @@
                             layout: {
 
                                 hLineWidth: function (i, node) { return 1; },
-
                                 vLineWidth: function (i, node) { return 1; },
-
                                 hLineColor: function (i, node) { return 'black'; },
-
                                 vLineColor: function (i, node) { return 'black'; }
 
                             }
 
                         },
 
-
-
                         { text: `TỔNG CỘNG: ${total.toLocaleString('vi-VN')} VNĐ`, color: '#cc0000', fontSize: 15, bold: true, alignment: 'right', margin: [0, 20, 0, 0] },
 
                         { text: `(Bằng chữ: ${docTien(total)})`, italics: true, fontSize: 10, color: '#444', alignment: 'right', margin: [0, 2, 0, 20] },
-
-
-
                         {
 
                             columns: [
 
                                 {
-
                                     width: '65%',
-
                                     stack: [
-
                                         { text: 'Ghi chú & Điều khoản:', bold: true, decoration: 'underline', fontSize: 11, margin: [0, 0, 0, 5] },
 
                                         {
@@ -849,9 +838,7 @@
                                             ul: [
 
                                                 `Giá trên đã bao gồm ${config.vat}% VAT.`,
-
                                                 `Thanh toán trước khi nhận hàng.`,
-
                                                 `Báo giá có hiệu lực 15 ngày.`
 
                                             ],
@@ -861,11 +848,8 @@
                                         },
 
                                         { text: 'Thông tin chuyển khoản:', bold: true, italics: true, fontSize: 11, margin: [0, 0, 0, 2] },
-
                                         { text: config.bank, fontSize: 11, margin: [0, 0, 0, 2] },
-
                                         { text: [{text: 'Đơn vị thụ hưởng: ', bold: true}, {text: config.name.toUpperCase()}], fontSize: 11, margin: [0, 0, 0, 2] },
-
                                         { text: `STK: ${config.stk}`, color: '#003399', bold: true, fontSize: 13 }
 
                                     ]
@@ -875,15 +859,11 @@
                                 {
 
                                     width: '35%',
-
                                     alignment: 'center',
-
                                     stack: [
 
                                         { text: dStr, italics: true, fontSize: 11, margin: [0, 0, 0, 5] },
-
                                         { text: 'GIÁM ĐỐC', color: '#003399', bold: true, fontSize: 12, margin: [0, 0, 0, 60] },
-
                                         { text: config.director, bold: true, fontSize: 12 }
 
                                     ]
@@ -895,45 +875,29 @@
                         },
 
                         { text: 'Xin chân thành cảm ơn Quý khách hàng!', italics: true, fontSize: 10, alignment: 'center', margin: [0, 40, 0, 0] }
-
                     ],
 
                     styles: { tableHeader: { bold: true, fontSize: 11, color: 'black', fillColor: '#e6f0fa', alignment: 'center', margin: [0, 5] } },
-
                     defaultStyle: { font: 'Roboto' }
 
                 };
-
-
-
                 let rawName = document.getElementById('cust-name').value || "KhachHang";
-
                 let safeName = rawName.replace(/[^a-zA-Z0-9\s]/g, "").replace(/\s+/g, "_");
-
                 let fileName = `BaoGia_${safeName}.pdf`;
-
-
 
                 pdfMake.createPdf(docDefinition).getBlob(function(blob) {
 
                     var url = window.URL.createObjectURL(blob);
-
                     var a = document.createElement('a');
-
                     a.style.display = 'none';
-
                     a.href = url;
-
                     a.download = fileName;
-
                     document.body.appendChild(a);
-
                     a.click();
 
                     setTimeout(function() {
 
                         document.body.removeChild(a);
-
                         window.URL.revokeObjectURL(url);
 
                     }, 100);
@@ -941,41 +905,27 @@
                 });
 
             } catch (err) {
-
                 console.error(err);
 
             }
 
         }
 
-
-
         function uploadLogo(input) {
 
             const file = input.files[0];
-
             const reader = new FileReader();
-
             reader.onload = (e) => { logoBase64 = e.target.result; localStorage.setItem('pt_logo_64', logoBase64); };
-
             if(file) reader.readAsDataURL(file);
-
         }
 
         function showSettings() { ['name','tax','addr','branch','phone','email','bank','stk','vat','director'].forEach(k => { document.getElementById('set-'+k).value = config[k]; }); document.getElementById('modal-settings').classList.remove('hidden'); }
-
         function closeSettings() { document.getElementById('modal-settings').classList.add('hidden'); }
-
         function saveSettings() { ['name','tax','addr','branch','phone','email','bank','stk','vat','director'].forEach(k => { config[k] = document.getElementById('set-'+k).value; }); localStorage.setItem('pt_config', JSON.stringify(config)); closeSettings(); calculateAll(); }
-
         function addItem() { items.push({ id: Date.now(), name: "", note: "", unit: "Cái", qty: 1, price: 0 }); renderItems(); calculateAll(); }
-
         function removeItem(id) { if(items.length > 1) { items = items.filter(i => i.id !== id); renderItems(); calculateAll(); } }
-
         function updateItem(id, f, v) { const i = items.find(x => x.id === id); if(i) { i[f] = f === 'qty' ? (parseFloat(v)||0) : v; calculateAll(); } }
-
         function updatePrice(id, v) { const val = parseInt(v.replace(/\D/g, '')) || 0; const i = items.find(x => x.id === id); if(i) { i.price = val; calculateAll(); } }
-
         function applyCatalog(id, idx) { if(idx === "") return; const i = items.find(x => x.id === id); i.name = CATALOG[idx].n; i.unit = CATALOG[idx].u; i.price = CATALOG[idx].p; renderItems(); calculateAll(); }
 
     </script>
