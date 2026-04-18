@@ -1,425 +1,456 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Báo Giá - Phương Thanh Composite</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap');
-        body { font-family: 'Roboto', sans-serif; background-color: #f1f5f9; margin: 0; padding: 0; }
-        .a4-page { width: 210mm; min-height: 296mm; padding: 12mm 15mm; margin: 20px auto; background: white; box-shadow: 0 0 20px rgba(0,0,0,0.15); color: black; }
-        .table-custom { width: 100%; border-collapse: collapse; border: 1px solid black; }
-        .table-custom th, .table-custom td { border: 1px solid black !important; padding: 7px 8px; font-size: 13px; color: black; }
-        .table-custom th { background-color: #e6f0fa !important; font-weight: bold; text-transform: none; text-align: center; }
-        .input-clean { border: none; border-bottom: 1px solid #e2e8f0; outline: none; width: 100%; padding: 4px; background: transparent; }
-        .input-clean:focus { border-bottom: 2px solid #2563eb; }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Báo Giá Pro - Phương Thanh Composite</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap');
+        body { font-family: 'Roboto', sans-serif; background-color: #f1f5f9; margin: 0; padding: 0; }
+        .a4-page { width: 210mm; min-height: 296mm; padding: 12mm 15mm; margin: 20px auto; background: white; box-shadow: 0 0 20px rgba(0,0,0,0.15); color: black; }
+        .table-custom { width: 100%; border-collapse: collapse; border: 1px solid black; }
+        .table-custom th, .table-custom td { border: 1px solid black !important; padding: 7px 8px; font-size: 13px; color: black; }
+        .table-custom th { background-color: #e6f0fa !important; font-weight: bold; text-transform: none; text-align: center; }
+        .input-clean { border: none; border-bottom: 1px solid #e2e8f0; outline: none; width: 100%; padding: 4px; background: transparent; transition: border-color 0.2s; }
+        .input-clean:focus { border-bottom: 2px solid #2563eb; }
+    </style>
 </head>
 <body class="text-slate-900">
 
-    <nav class="bg-indigo-950 text-white p-3 sticky top-0 z-50 shadow-xl flex justify-between items-center px-4">
-        <div class="font-bold text-xs uppercase tracking-widest">Phương Thanh Composite</div>
-        <div class="flex gap-2">
-            <button onclick="showSettings()" class="bg-indigo-800 px-3 py-1.5 rounded text-[10px] font-bold uppercase">⚙️ Cài đặt</button>
-            <button onclick="toggleView('edit')" id="btn-back" class="hidden bg-slate-600 px-3 py-1.5 rounded text-[10px] font-bold uppercase">Sửa dữ liệu</button>
-            <button onclick="toggleView('preview')" id="btn-go-preview" class="bg-blue-600 hover:bg-blue-500 px-4 py-1.5 rounded text-[10px] font-black uppercase shadow-lg">Xem & Xuất PDF</button>
-        </div>
-    </nav>
+    <nav class="bg-indigo-950 text-white p-3 sticky top-0 z-50 shadow-xl flex justify-between items-center px-4">
+        <div class="font-bold text-xs uppercase tracking-widest">Phương Thanh Composite</div>
+        <div class="flex gap-2">
+            <button onclick="showSettings()" class="bg-indigo-800 px-3 py-1.5 rounded text-[10px] font-bold uppercase">⚙️ Cài đặt</button>
+            <button onclick="toggleView('edit')" id="btn-back" class="hidden bg-slate-600 px-3 py-1.5 rounded text-[10px] font-bold uppercase">Sửa dữ liệu</button>
+            <button onclick="toggleView('preview')" id="btn-go-preview" class="bg-blue-600 hover:bg-blue-500 px-4 py-1.5 rounded text-[10px] font-black uppercase shadow-lg">Xem & Xuất PDF</button>
+        </div>
+    </nav>
 
-    <div id="edit-mode" class="max-w-4xl mx-auto p-4 space-y-6">
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-            <h3 class="text-blue-700 font-black text-xs uppercase mb-4 border-b pb-2 tracking-widest"><i class="fa-solid fa-user-tag"></i> I. Thông tin khách hàng</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <input type="text" id="cust-name" placeholder="Tên khách hàng" class="w-full border p-2.5 rounded-xl font-bold uppercase border-slate-200 focus:ring-2 focus:ring-blue-100 outline-none">
-                <input type="date" id="quote-date" class="w-full border p-2.5 rounded-xl border-slate-200 outline-none">
-                <input type="text" id="cust-addr" placeholder="Địa chỉ..." class="w-full border p-2.5 rounded-xl border-slate-200 md:col-span-2 outline-none">
-                <input type="text" id="cust-phone" placeholder="Điện thoại / MST..." class="w-full border p-2.5 rounded-xl border-slate-200 md:col-span-2 outline-none">
-            </div>
-        </div>
+    <div id="edit-mode" class="max-w-4xl mx-auto p-4 space-y-6">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+            <h3 class="text-blue-700 font-black text-xs uppercase mb-4 border-b pb-2 tracking-widest"><i class="fa-solid fa-user-tag"></i> I. Thông tin khách hàng</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input type="text" id="cust-name" placeholder="Tên khách hàng" class="w-full border p-2.5 rounded-xl font-bold uppercase border-slate-200 focus:ring-2 focus:ring-blue-100 outline-none">
+                <input type="date" id="quote-date" class="w-full border p-2.5 rounded-xl border-slate-200 outline-none">
+                <input type="text" id="cust-addr" placeholder="Địa chỉ..." class="w-full border p-2.5 rounded-xl border-slate-200 md:col-span-2 outline-none">
+                <input type="text" id="cust-phone" placeholder="Điện thoại / MST..." class="w-full border p-2.5 rounded-xl border-slate-200 md:col-span-2 outline-none">
+            </div>
+        </div>
 
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div class="p-4 bg-slate-50 border-b flex justify-between items-center px-6">
-                <h3 class="text-blue-700 font-black text-xs uppercase">II. Chi tiết hàng hóa</h3>
-                <button onclick="addItem()" class="bg-indigo-600 text-white px-4 py-1.5 rounded-xl text-xs font-bold shadow-md">+ Thêm dòng mới</button>
-            </div>
-            <div id="items-list" class="p-6 space-y-4"></div>
-            <div class="p-8 bg-indigo-50/30 border-t space-y-3">
-                <div class="flex justify-end pt-4">
-                    <div class="text-right">
-                        <span class="text-red-600 font-black text-xl uppercase mr-6">Tổng thanh toán:</span>
-                        <div class="inline-block">
-                            <span id="sum-total" class="text-4xl font-black text-blue-700 leading-none">0</span>
-                            <span class="text-blue-700 font-black ml-1 text-sm uppercase">VNĐ</span>
-                        </div>
-                    </div>
-                </div>
-                <p id="sum-words" class="text-right text-[12px] italic text-slate-500 font-bold mt-2"></p>
-            </div>
-        </div>
-    </div>
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="p-4 bg-slate-50 border-b flex justify-between items-center px-6">
+                <h3 class="text-blue-700 font-black text-xs uppercase">II. Chi tiết hàng hóa</h3>
+                <button onclick="addItem()" class="bg-indigo-600 text-white px-4 py-1.5 rounded-xl text-xs font-bold shadow-md">+ Thêm dòng mới</button>
+            </div>
+            <div id="items-list" class="p-6 space-y-4"></div>
+            <div class="p-8 bg-indigo-50/30 border-t space-y-3">
+                <div class="flex justify-end pt-4">
+                    <div class="text-right">
+                        <span class="text-red-600 font-black text-xl uppercase mr-6">Tổng thanh toán:</span>
+                        <div class="inline-block">
+                            <span id="sum-total" class="text-4xl font-black text-blue-700 leading-none">0</span>
+                            <span class="text-blue-700 font-black ml-1 text-sm uppercase">VNĐ</span>
+                        </div>
+                    </div>
+                </div>
+                <p id="sum-words" class="text-right text-[12px] italic text-slate-500 font-bold mt-2"></p>
+            </div>
+        </div>
+    </div>
 
-    <div id="preview-mode" class="hidden bg-slate-300 py-10 min-h-screen">
-        <div class="max-w-[210mm] mx-auto mb-8 flex flex-col gap-3 px-4">
-            <div id="zalo-warning" class="hidden bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded shadow-md text-sm font-bold">
-                <i class="fa-solid fa-triangle-exclamation mr-1"></i> LƯU Ý TỪ HỆ THỐNG:<br>
-                Zalo có thể chặn việc tải file. Bạn hãy bấm vào <b>dấu 3 chấm (...) góc màn hình</b> -> Chọn <b>"Mở bằng Safari / Chrome"</b> để tải file PDF về máy thành công bạn nhé!
-            </div>
+    <div id="preview-mode" class="hidden bg-slate-300 py-10 min-h-screen">
+        <div class="max-w-[210mm] mx-auto mb-8 flex flex-col gap-3 px-4">
+            <div id="zalo-warning" class="hidden bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded shadow-md text-sm font-bold">
+                <i class="fa-solid fa-triangle-exclamation mr-1"></i> LƯU Ý TỪ HỆ THỐNG:<br>
+                Zalo có thể chặn việc tải file. Bạn hãy bấm vào <b>dấu 3 chấm (...) góc màn hình</b> -> Chọn <b>"Mở bằng Safari / Chrome"</b> để tải file PDF về máy thành công bạn nhé!
+            </div>
 
-            <button onclick="exportNativePDF()" class="w-full bg-red-600 hover:bg-red-700 text-white py-4 rounded-2xl font-black uppercase shadow-xl transition-all active:scale-95 text-lg tracking-widest flex items-center justify-center">
-                <i class="fa-solid fa-download mr-3"></i> TẢI THẲNG PDF VỀ MÁY
-            </button>
-        </div>
-        <div id="preview-a4" class="a4-page mx-auto shadow-2xl">
-            <div id="preview-content"></div>
-        </div>
-    </div>
+            <button onclick="exportNativePDF()" class="w-full bg-red-600 hover:bg-red-700 text-white py-4 rounded-2xl font-black uppercase shadow-xl transition-all active:scale-95 text-lg tracking-widest flex items-center justify-center">
+                <i class="fa-solid fa-download mr-3"></i> TẢI THẲNG PDF VỀ MÁY
+            </button>
+        </div>
+        <div id="preview-a4" class="a4-page mx-auto shadow-2xl">
+            <div id="preview-content"></div>
+        </div>
+    </div>
 
-    <div id="modal-settings" class="fixed inset-0 bg-black/60 hidden z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden font-bold">
-            <div class="bg-indigo-950 text-white p-5 flex justify-between uppercase text-[10px] tracking-widest"><span>Cấu hình công ty</span><button onclick="closeSettings()">&times;</button></div>
-            <div class="p-6 space-y-3 text-sm bg-slate-50 overflow-y-auto max-h-[70vh]">
-                <label class="text-[10px] text-slate-500 uppercase">Tải Logo Công ty:</label>
-                <input type="file" accept="image/*" onchange="uploadLogo(this)" class="w-full border p-2 rounded text-xs bg-white">
-                <input type="text" id="set-name" placeholder="Tên Công Ty" class="w-full border p-2.5 rounded shadow-sm">
-                <input type="text" id="set-tax" placeholder="Mã số thuế" class="w-full border p-2.5 rounded shadow-sm">
-                <input type="text" id="set-addr" placeholder="Trụ sở chính" class="w-full border p-2.5 rounded shadow-sm">
-                <input type="text" id="set-branch" placeholder="Chi nhánh" class="w-full border p-2.5 rounded shadow-sm text-blue-700">
-                <input type="text" id="set-phone" placeholder="Số điện thoại" class="w-full border p-2.5 rounded shadow-sm">
-                <input type="text" id="set-email" placeholder="Email" class="w-full border p-2.5 rounded shadow-sm">
-                <textarea id="set-bank" placeholder="Ngân hàng" rows="2" class="w-full border p-2.5 rounded shadow-sm"></textarea>
-                <input type="text" id="set-stk" placeholder="Số tài khoản" class="w-full border p-2.5 rounded shadow-sm font-black text-blue-700">
-                <input type="number" id="set-vat" placeholder="Thuế VAT (%)" class="w-full border p-2.5 rounded shadow-sm">
-                <input type="text" id="set-director" placeholder="Tên Giám đốc" class="w-full border p-2.5 rounded font-black uppercase text-blue-800 shadow-sm">
-            </div>
-            <div class="p-5 bg-white text-right border-t"><button onclick="saveSettings()" class="bg-blue-700 text-white px-8 py-2 rounded-lg font-black text-xs uppercase">Cập nhật dữ liệu</button></div>
-        </div>
-    </div>
+    <div id="modal-settings" class="fixed inset-0 bg-black/60 hidden z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden font-bold">
+            <div class="bg-indigo-950 text-white p-5 flex justify-between uppercase text-[10px] tracking-widest"><span>Cấu hình công ty</span><button onclick="closeSettings()">&times;</button></div>
+            <div class="p-6 space-y-3 text-sm bg-slate-50 overflow-y-auto max-h-[70vh]">
+                <label class="text-[10px] text-slate-500 uppercase">Tải Logo Công ty:</label>
+                <input type="file" accept="image/*" onchange="uploadLogo(this)" class="w-full border p-2 rounded text-xs bg-white">
+                <input type="text" id="set-name" placeholder="Tên Công Ty" class="w-full border p-2.5 rounded shadow-sm">
+                <input type="text" id="set-tax" placeholder="Mã số thuế" class="w-full border p-2.5 rounded shadow-sm">
+                <input type="text" id="set-addr" placeholder="Trụ sở chính" class="w-full border p-2.5 rounded shadow-sm">
+                <input type="text" id="set-branch" placeholder="Chi nhánh" class="w-full border p-2.5 rounded shadow-sm text-blue-700">
+                <input type="text" id="set-phone" placeholder="Số điện thoại" class="w-full border p-2.5 rounded shadow-sm">
+                <input type="text" id="set-email" placeholder="Email" class="w-full border p-2.5 rounded shadow-sm">
+                <textarea id="set-bank" placeholder="Ngân hàng" rows="2" class="w-full border p-2.5 rounded shadow-sm"></textarea>
+                <input type="text" id="set-stk" placeholder="Số tài khoản" class="w-full border p-2.5 rounded shadow-sm font-black text-blue-700">
+                <input type="number" id="set-vat" placeholder="Thuế VAT (%)" class="w-full border p-2.5 rounded shadow-sm">
+                <input type="text" id="set-director" placeholder="Tên Giám đốc" class="w-full border p-2.5 rounded font-black uppercase text-blue-800 shadow-sm">
+            </div>
+            <div class="p-5 bg-white text-right border-t"><button onclick="saveSettings()" class="bg-blue-700 text-white px-8 py-2 rounded-lg font-black text-xs uppercase">Cập nhật dữ liệu</button></div>
+        </div>
+    </div>
 
-    <script>
-        const CATALOG = [
-            { n: "Nhớt động cơ máy 2 thì", u: "Can", p: 525000 },
-            { n: "Nhớt động cơ máy 4 thì", u: "Can", p: 683333 },
-            { n: "Nhớt 4 thì - can 4 lít", u: "Can", p: 700000 },
-            { n: "Nhớt hộp số 1 lít", u: "Can", p: 270000 },
-            { n: "Ron ốc nhớt", u: "Cái", p: 30000 },
-            { n: "Bugi - 4 thì", u: "Cái", p: 240000 },
-            { n: "Lọc xăng ngoài", u: "Cái", p: 1500000 },
-            { n: "Lọc nhớt", u: "Cái", p: 1050000 },
-            { n: "Công thợ thay nhớt/bảo trì", u: "Công", p: 1200000 }
-        ];
+    <script>
+        const CATALOG = [
+            { n: "Nhớt động cơ máy 2 thì", u: "Can", p: 525000 },
+            { n: "Nhớt động cơ máy 4 thì", u: "Can", p: 683333 },
+            { n: "Nhớt 4 thì - can 4 lít", u: "Can", p: 700000 },
+            { n: "Nhớt hộp số 1 lít", u: "Can", p: 270000 },
+            { n: "Ron ốc nhớt", u: "Cái", p: 30000 },
+            { n: "Bugi - 4 thì", u: "Cái", p: 240000 },
+            { n: "Lọc xăng ngoài", u: "Cái", p: 1500000 },
+            { n: "Lọc nhớt", u: "Cái", p: 1050000 },
+            { n: "Công thợ thay nhớt/bảo trì", u: "Công", p: 1200000 }
+        ];
 
-        let config = {};
-        try {
-            let savedConfig = JSON.parse(localStorage.getItem('pt_config')) || {};
-            config = {
-                name: savedConfig.name || "CÔNG TY TNHH MTV PHƯƠNG THANH COMPOSITE",
-                tax: savedConfig.tax || "1702233007",
-                addr: savedConfig.addr || "506A, Ấp Tân Phước, Xã Châu Thành, Tỉnh An Giang",
-                branch: savedConfig.branch || "Đường Nguyễn Văn Cừ, Tổ 6, Khu Phố 4, Đặc Khu Phú Quốc, Tỉnh An Giang",
-                phone: savedConfig.phone || "0949.878.208 - 0942.959.263",
-                email: savedConfig.email || "phuongthanhcomposite@gmail.com",
-                bank: savedConfig.bank || "Ngân hàng MB - Ngân hàng Quân đội, chi nhánh Rạch Giá, An Giang",
-                stk: savedConfig.stk || "242666686868",
-                director: savedConfig.director || "BÙI NHỰT PHƯƠNG",
-                vat: savedConfig.vat !== undefined ? savedConfig.vat : 10
-            };
-        } catch(e) { console.error("Lỗi config"); }
-        
-        let logoBase64 = localStorage.getItem('pt_logo_64') || "";
-        let items = [{ id: 1, name: "Nhớt 4 thì - can 4 lít", unit: "Can", qty: 4, price: 700000 }];
+        let config = {};
+        try {
+            let savedConfig = JSON.parse(localStorage.getItem('pt_config')) || {};
+            config = {
+                name: savedConfig.name || "CÔNG TY TNHH MTV PHƯƠNG THANH COMPOSITE",
+                tax: savedConfig.tax || "1702233007",
+                addr: savedConfig.addr || "506A, Ấp Tân Phước, Xã Châu Thành, Tỉnh An Giang",
+                branch: savedConfig.branch || "Đường Nguyễn Văn Cừ, Tổ 6, Khu Phố 4, Đặc Khu Phú Quốc, Tỉnh An Giang",
+                phone: savedConfig.phone || "0949.878.208 - 0942.959.263",
+                email: savedConfig.email || "phuongthanhcomposite@gmail.com",
+                bank: savedConfig.bank || "Ngân hàng MB - Ngân hàng Quân đội, chi nhánh Rạch Giá, An Giang",
+                stk: savedConfig.stk || "242666686868",
+                director: savedConfig.director || "BÙI NHỰT PHƯƠNG",
+                vat: savedConfig.vat !== undefined ? savedConfig.vat : 10
+            };
+        } catch(e) { console.error("Lỗi config"); }
+        
+        let logoBase64 = localStorage.getItem('pt_logo_64') || "";
+        // Thêm trường "note" vào dữ liệu mặc định
+        let items = [{ id: 1, name: "Nhớt 4 thì - can 4 lít", note: "", unit: "Can", qty: 4, price: 700000 }];
 
-        window.onload = () => {
-            document.getElementById('quote-date').value = new Date().toISOString().split('T')[0];
-            renderItems(); calculateAll();
-            
-            if (/Zalo/i.test(navigator.userAgent)) {
-                document.getElementById('zalo-warning').classList.remove('hidden');
-            }
-        };
+        window.onload = () => {
+            document.getElementById('quote-date').value = new Date().toISOString().split('T')[0];
+            renderItems(); calculateAll();
+            
+            if (/Zalo/i.test(navigator.userAgent)) {
+                document.getElementById('zalo-warning').classList.remove('hidden');
+            }
+        };
 
-        function renderItems() {
-            const list = document.getElementById('items-list');
-            list.innerHTML = items.map(item => `
-                <div class="border border-slate-200 p-4 rounded-2xl bg-white relative shadow-sm hover:border-blue-300">
-                    <button onclick="removeItem(${item.id})" class="absolute top-1 right-2 text-red-400 font-bold">&times;</button>
-                    <select onchange="applyCatalog(${item.id}, this.value)" class="w-full text-[11px] font-bold text-blue-700 bg-blue-50/50 p-1 mb-2 rounded-lg outline-none cursor-pointer">
-                        <option value="">-- Click để chọn hàng mẫu --</option>
-                        ${CATALOG.map((c, i) => `<option value="${i}">${c.n} (${c.p.toLocaleString()}đ)</option>`).join('')}
-                    </select>
-                    <div class="grid grid-cols-12 gap-3">
-                        <input type="text" value="${item.name}" oninput="updateItem(${item.id}, 'name', this.value)" class="col-span-12 md:col-span-5 input-clean font-bold text-slate-800" placeholder="Tên hàng hóa">
-                        <input type="text" value="${item.unit}" oninput="updateItem(${item.id}, 'unit', this.value)" class="col-span-4 md:col-span-2 input-clean text-center text-xs" placeholder="ĐVT">
-                        <input type="number" value="${item.qty}" oninput="updateItem(${item.id}, 'qty', this.value)" class="col-span-3 md:col-span-2 input-clean text-center font-black text-blue-600">
-                        <input type="text" value="${item.price.toLocaleString('vi-VN')}" oninput="updatePrice(${item.id}, this.value)" class="col-span-5 md:col-span-3 input-clean text-right font-black text-slate-900">
-                    </div>
-                </div>
-            `).join('');
-        }
+        function renderItems() {
+            const list = document.getElementById('items-list');
+            list.innerHTML = items.map(item => `
+                <div class="border border-slate-200 p-4 rounded-2xl bg-white relative shadow-sm hover:border-blue-300">
+                    <button onclick="removeItem(${item.id})" class="absolute top-1 right-2 text-red-400 font-bold">&times;</button>
+                    <select onchange="applyCatalog(${item.id}, this.value)" class="w-full text-[11px] font-bold text-blue-700 bg-blue-50/50 p-1 mb-2 rounded-lg outline-none cursor-pointer">
+                        <option value="">-- Click để chọn hàng mẫu --</option>
+                        ${CATALOG.map((c, i) => `<option value="${i}">${c.n} (${c.p.toLocaleString()}đ)</option>`).join('')}
+                    </select>
+                    <div class="grid grid-cols-12 gap-3">
+                        <div class="col-span-12 md:col-span-5 flex flex-col gap-1">
+                            <input type="text" value="${item.name}" oninput="updateItem(${item.id}, 'name', this.value)" class="input-clean font-bold text-slate-800" placeholder="Tên hàng hóa">
+                            <input type="text" value="${item.note || ''}" oninput="updateItem(${item.id}, 'note', this.value)" class="input-clean text-[11px] italic text-slate-500" placeholder="Ghi chú thêm (VD: 10 Thùng...)">
+                        </div>
+                        <input type="text" value="${item.unit}" oninput="updateItem(${item.id}, 'unit', this.value)" class="col-span-4 md:col-span-2 input-clean text-center text-xs mt-2 md:mt-0" placeholder="ĐVT">
+                        <input type="number" value="${item.qty}" oninput="updateItem(${item.id}, 'qty', this.value)" class="col-span-3 md:col-span-2 input-clean text-center font-black text-blue-600 mt-2 md:mt-0">
+                        <input type="text" value="${item.price.toLocaleString('vi-VN')}" oninput="updatePrice(${item.id}, this.value)" class="col-span-5 md:col-span-3 input-clean text-right font-black text-slate-900 mt-2 md:mt-0">
+                    </div>
+                </div>
+            `).join('');
+        }
 
-        function calculateAll() {
-            let total = items.reduce((s, i) => s + (i.qty * i.price), 0);
-            document.getElementById('sum-total').innerText = total.toLocaleString('vi-VN');
-            document.getElementById('sum-words').innerText = "(Bằng chữ: " + docTien(total) + ")";
-        }
+        function calculateAll() {
+            let total = items.reduce((s, i) => s + (i.qty * i.price), 0);
+            document.getElementById('sum-total').innerText = total.toLocaleString('vi-VN');
+            document.getElementById('sum-words').innerText = "(Bằng chữ: " + docTien(total) + ")";
+        }
 
-        function docTien(so) {
-            if (so === 0) return "Không đồng";
-            const chuSo = ["không", "một", "hai", "ba", "bốn", "năm", "sáu", "bảy", "tám", "chín"];
-            const hang = ["", "nghìn", "triệu", "tỷ"];
-            function doc3(n, isFirst) {
-                let tr = Math.floor(n/100), ch = Math.floor((n%100)/10), dv = n%10, s = "";
-                if (tr>0 || !isFirst) s += chuSo[tr] + " trăm ";
-                if (ch==0 && dv!=0 && s!=="") s += " linh ";
-                if (ch==1) s += " mười "; else if (ch>1) s += chuSo[ch] + " mươi ";
-                if (dv>0) { if (dv==1 && ch>1) s += " mốt "; else if (dv==5 && ch>0) s += " lăm "; else s += chuSo[dv] + " "; }
-                return s;
-            }
-            let res = "", i = 0, temp = Math.abs(so);
-            do { let lop = temp % 1000; if (lop > 0) { let s = doc3(lop, temp < 1000); res = s + hang[i] + " " + res; } temp = Math.floor(temp / 1000); i++; } while (temp > 0);
-            return res.trim().replace(/\s+/g, ' ').charAt(0).toUpperCase() + res.trim().replace(/\s+/g, ' ').slice(1) + " đồng chẵn.";
-        }
+        function docTien(so) {
+            if (so === 0) return "Không đồng";
+            const chuSo = ["không", "một", "hai", "ba", "bốn", "năm", "sáu", "bảy", "tám", "chín"];
+            const hang = ["", "nghìn", "triệu", "tỷ"];
+            function doc3(n, isFirst) {
+                let tr = Math.floor(n/100), ch = Math.floor((n%100)/10), dv = n%10, s = "";
+                if (tr>0 || !isFirst) s += chuSo[tr] + " trăm ";
+                if (ch==0 && dv!=0 && s!=="") s += " linh ";
+                if (ch==1) s += " mười "; else if (ch>1) s += chuSo[ch] + " mươi ";
+                if (dv>0) { if (dv==1 && ch>1) s += " mốt "; else if (dv==5 && ch>0) s += " lăm "; else s += chuSo[dv] + " "; }
+                return s;
+            }
+            let res = "", i = 0, temp = Math.abs(so);
+            do { let lop = temp % 1000; if (lop > 0) { let s = doc3(lop, temp < 1000); res = s + hang[i] + " " + res; } temp = Math.floor(temp / 1000); i++; } while (temp > 0);
+            return res.trim().replace(/\s+/g, ' ').charAt(0).toUpperCase() + res.trim().replace(/\s+/g, ' ').slice(1) + " đồng chẵn.";
+        }
 
-        function toggleView(mode) {
-            const isPreview = mode === 'preview';
-            if(isPreview) syncPreview();
-            document.getElementById('edit-mode').classList.toggle('hidden', isPreview);
-            document.getElementById('preview-mode').classList.toggle('hidden', !isPreview);
-            document.getElementById('btn-go-preview').classList.toggle('hidden', isPreview);
-            document.getElementById('btn-back').classList.toggle('hidden', !isPreview);
-            window.scrollTo(0,0);
-        }
+        function toggleView(mode) {
+            const isPreview = mode === 'preview';
+            if(isPreview) syncPreview();
+            document.getElementById('edit-mode').classList.toggle('hidden', isPreview);
+            document.getElementById('preview-mode').classList.toggle('hidden', !isPreview);
+            document.getElementById('btn-go-preview').classList.toggle('hidden', isPreview);
+            document.getElementById('btn-back').classList.toggle('hidden', !isPreview);
+            window.scrollTo(0,0);
+        }
 
-        function syncPreview() {
-            const d = new Date(document.getElementById('quote-date').value);
-            const dStr = `Ngày ${d.getDate()} tháng ${d.getMonth()+1} năm ${d.getFullYear()}`;
-            let total = items.reduce((s, i) => s + (i.qty * i.price), 0);
+        function syncPreview() {
+            const d = new Date(document.getElementById('quote-date').value);
+            const dStr = `Ngày ${d.getDate()} tháng ${d.getMonth()+1} năm ${d.getFullYear()}`;
+            let total = items.reduce((s, i) => s + (i.qty * i.price), 0);
 
-            let branchHtml = config.branch ? `<p style="margin:0;">CN: ${config.branch}</p>` : "";
-            let emailHtml = config.email ? `<p style="margin:0;">Email: ${config.email}</p>` : "";
+            let branchHtml = config.branch ? `<p style="margin:0;">CN: ${config.branch}</p>` : "";
+            let emailHtml = config.email ? `<p style="margin:0;">Email: ${config.email}</p>` : "";
 
-            document.getElementById('preview-content').innerHTML = `
-                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:15px;">
-                    <div style="width:130px;">${logoBase64 ? `<img src="${logoBase64}" style="width:100%;">` : `<div style="text-align:center; color:#ddd; font-weight:900; border:2px dashed #eee; padding:20px;">LOGO</div>`}</div>
-                    <div style="text-align:right; font-size:11.5px; line-height:1.4; color:#000;">
-                        <h2 style="color:#cc0000; font-size:16px; font-weight:900; margin:0;">${config.name}</h2>
-                        <p style="margin:2px 0 0 0;">MST: ${config.tax}</p>
-                        <p style="margin:0;">ĐC: ${config.addr}</p>
-                        ${branchHtml}
-                        <p style="margin:2px 0 0 0;">Tel: <span style="color:#003399; font-weight:bold;">${config.phone}</span></p>
-                        ${emailHtml}
-                    </div>
-                </div>
-                
-                <div style="border-top:2px solid #cc0000; margin-bottom:15px;"></div>
-                
-                <h1 style="text-align:center; color:#003399; font-size:24px; font-weight:900; margin:0; letter-spacing:1px">BẢNG BÁO GIÁ</h1>
-                <p style="text-align:center; font-style:italic; font-size:13px; margin-bottom:20px;">${dStr}</p>
+            let custName = document.getElementById('cust-name').value;
+            let custAddr = document.getElementById('cust-addr').value;
+            let custPhone = document.getElementById('cust-phone').value;
 
-                <div style="margin-bottom:15px; font-size:14px; line-height:1.5;">
-                    <h3 style="color:#003399; font-weight:bold; margin-bottom:5px; font-size:13px; text-transform:uppercase;">I. THÔNG TIN KHÁCH HÀNG</h3>
-                    <p style="margin:0;"><strong>Khách hàng:</strong> <span style="text-transform:uppercase;">${document.getElementById('cust-name').value || ""}</span></p>
-                    <p style="margin:0;"><strong>Địa chỉ:</strong> ${document.getElementById('cust-addr').value || ""}</p>
-                    <p style="margin:0;"><strong>Điện thoại/MST:</strong> ${document.getElementById('cust-phone').value || ""}</p>
-                </div>
+            document.getElementById('preview-content').innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:15px;">
+                    <div style="width:130px;">${logoBase64 ? `<img src="${logoBase64}" style="width:100%;">` : `<div style="text-align:center; color:#ddd; font-weight:900; border:2px dashed #eee; padding:20px;">LOGO</div>`}</div>
+                    <div style="text-align:right; font-size:11.5px; line-height:1.4; color:#000;">
+                        <h2 style="color:#cc0000; font-size:16px; font-weight:900; margin:0;">${config.name}</h2>
+                        <p style="margin:2px 0 0 0;">MST: ${config.tax}</p>
+                        <p style="margin:0;">ĐC: ${config.addr}</p>
+                        ${branchHtml}
+                        <p style="margin:2px 0 0 0;">Tel: <span style="color:#003399; font-weight:bold;">${config.phone}</span></p>
+                        ${emailHtml}
+                    </div>
+                </div>
+                
+                <div style="border-top:2px solid #cc0000; margin-bottom:15px;"></div>
+                
+                <h1 style="text-align:center; color:#003399; font-size:24px; font-weight:900; margin:0; letter-spacing:1px">BẢNG BÁO GIÁ</h1>
+                <p style="text-align:center; font-style:italic; font-size:13px; margin-bottom:20px;">${dStr}</p>
 
-                <div style="margin-bottom:15px;">
-                    <h3 style="color:#003399; font-weight:bold; margin-bottom:5px; font-size:13px; text-transform:uppercase;">II. CHI TIẾT BÁO GIÁ</h3>
-                    <table class="table-custom">
-                        <thead><tr>
-                            <th style="width:40px; text-align:center;">STT</th>
-                            <th style="text-align:left;">Tên hàng hóa / Quy cách</th>
-                            <th style="width:60px; text-align:center;">ĐVT</th>
-                            <th style="width:50px; text-align:center;">SL</th>
-                            <th style="width:100px; text-align:right;">Đơn giá</th>
-                            <th style="width:110px; text-align:right;">Thành tiền</th>
-                        </tr></thead>
-                        <tbody>
-                            ${items.map((it, idx) => `<tr><td style="text-align:center;">${idx+1}</td><td style="font-weight:bold;">${it.name}</td><td style="text-align:center;">${it.unit}</td><td style="text-align:center; font-weight:bold;">${it.qty}</td><td style="text-align:right;">${it.price.toLocaleString('vi-VN')}</td><td style="text-align:right; font-weight:bold; color:#003399;">${(it.qty*it.price).toLocaleString('vi-VN')}</td></tr>`).join('')}
-                        </tbody>
-                    </table>
-                </div>
+                <div style="margin-bottom:15px; font-size:14px; line-height:1.5;">
+                    <h3 style="color:#003399; font-weight:bold; margin-bottom:5px; font-size:13px; text-transform:uppercase;">I. THÔNG TIN KHÁCH HÀNG</h3>
+                    <p style="margin:0;"><strong>Khách hàng:</strong> <span style="text-transform:uppercase;">${custName}</span></p>
+                    <p style="margin:0;"><strong>Địa chỉ:</strong> ${custAddr}</p>
+                    <p style="margin:0;"><strong>Điện thoại/MST:</strong> ${custPhone}</p>
+                </div>
 
-                <div style="text-align:right; margin-bottom:25px;">
-                    <h3 style="color:#cc0000; font-size:18px; font-weight:900; margin:0;">TỔNG CỘNG: ${total.toLocaleString('vi-VN')} VNĐ</h3>
-                    <p style="font-style:italic; font-size:12px; margin:3px 0 0 0; color:#444;">(Bằng chữ: ${docTien(total)})</p>
-                </div>
+                <div style="margin-bottom:15px;">
+                    <h3 style="color:#003399; font-weight:bold; margin-bottom:5px; font-size:13px; text-transform:uppercase;">II. CHI TIẾT BÁO GIÁ</h3>
+                    <table class="table-custom">
+                        <thead><tr>
+                            <th style="width:40px; text-align:center;">STT</th>
+                            <th style="text-align:left;">Tên hàng hóa / Quy cách</th>
+                            <th style="width:60px; text-align:center;">ĐVT</th>
+                            <th style="width:50px; text-align:center;">SL</th>
+                            <th style="width:100px; text-align:right;">Đơn giá</th>
+                            <th style="width:110px; text-align:right;">Thành tiền</th>
+                        </tr></thead>
+                        <tbody>
+                            ${items.map((it, idx) => `
+                                <tr>
+                                    <td style="text-align:center;">${idx+1}</td>
+                                    <td style="text-align:left;">
+                                        <div style="font-weight:bold;">${it.name}</div>
+                                        ${it.note ? `<div style="font-style:italic; font-size:11px; color:#64748b; margin-top:2px;">${it.note}</div>` : ''}
+                                    </td>
+                                    <td style="text-align:center;">${it.unit}</td>
+                                    <td style="text-align:center; font-weight:bold;">${it.qty}</td>
+                                    <td style="text-align:right;">${it.price.toLocaleString('vi-VN')}</td>
+                                    <td style="text-align:right; font-weight:bold; color:#003399;">${(it.qty*it.price).toLocaleString('vi-VN')}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
 
-                <div style="display:flex; justify-content:space-between; font-size:14px; line-height:1.5;">
-                    <div style="width:65%;">
-                        <p style="font-weight:bold; text-decoration:underline; font-size:15px; margin-bottom:5px;">Ghi chú & Điều khoản:</p>
-                        <ul style="margin:0; padding-left:20px; list-style-type:disc;">
-                            <li>Giá trên đã bao gồm ${config.vat}% VAT.</li>
-                            <li>Thanh toán trước khi nhận hàng.</li>
-                            <li>Báo giá có hiệu lực 15 ngày.</li>
-                        </ul>
-                        <p style="font-weight:bold; font-style:italic; margin-top:15px; font-size:15px;">Thông tin chuyển khoản:</p>
-                        <p style="margin:2px 0;">${config.bank}</p>
-                        <p style="margin:2px 0;"><strong>Đơn vị thụ hưởng:</strong> <span style="text-transform:uppercase;">${config.name}</span></p>
-                        <p style="margin:2px 0; color:#003399; font-size:16px; font-weight:bold;">STK: ${config.stk}</p>
-                    </div>
-                    <div style="text-align:center; width:35%;">
-                        <p style="font-style:italic; font-size:13px;">${dStr}</p>
-                        <p style="color:#003399; font-weight:900; font-size:16px; margin:5px 0 70px 0;">GIÁM ĐỐC</p>
-                        <p style="font-weight:bold; text-transform:uppercase; font-size:14px; padding-top:5px; display:inline-block; min-width:180px;">${config.director}</p>
-                    </div>
-                </div>
-                
-                <div style="text-align:center; margin-top:35px; font-style:italic; font-size:12px;">Xin chân thành cảm ơn Quý khách hàng!</div>
-            `;
-        }
+                <div style="text-align:right; margin-bottom:25px;">
+                    <h3 style="color:#cc0000; font-size:18px; font-weight:900; margin:0;">TỔNG CỘNG: ${total.toLocaleString('vi-VN')} VNĐ</h3>
+                    <p style="font-style:italic; font-size:12px; margin:3px 0 0 0; color:#444;">(Bằng chữ: ${docTien(total)})</p>
+                </div>
 
-        function exportNativePDF() {
-            try {
-                const d = new Date(document.getElementById('quote-date').value);
-                const dStr = `Ngày ${d.getDate()} tháng ${d.getMonth()+1} năm ${d.getFullYear()}`;
-                let total = items.reduce((s, i) => s + (i.qty * i.price), 0);
-                
-                let tableBody = [
-                    [
-                        { text: 'STT', style: 'tableHeader' },
-                        { text: 'Tên hàng hóa / Quy cách', style: 'tableHeader', alignment: 'left' },
-                        { text: 'ĐVT', style: 'tableHeader' },
-                        { text: 'SL', style: 'tableHeader' },
-                        { text: 'Đơn giá', style: 'tableHeader', alignment: 'right' },
-                        { text: 'Thành tiền', style: 'tableHeader', alignment: 'right' }
-                    ]
-                ];
+                <div style="display:flex; justify-content:space-between; font-size:14px; line-height:1.5;">
+                    <div style="width:65%;">
+                        <p style="font-weight:bold; text-decoration:underline; font-size:15px; margin-bottom:5px;">Ghi chú & Điều khoản:</p>
+                        <ul style="margin:0; padding-left:20px; list-style-type:disc;">
+                            <li>Giá trên đã bao gồm ${config.vat}% VAT.</li>
+                            <li>Thanh toán trước khi nhận hàng.</li>
+                            <li>Báo giá có hiệu lực 15 ngày.</li>
+                        </ul>
+                        <p style="font-weight:bold; font-style:italic; margin-top:15px; font-size:15px;">Thông tin chuyển khoản:</p>
+                        <p style="margin:2px 0;">${config.bank}</p>
+                        <p style="margin:2px 0;"><strong>Đơn vị thụ hưởng:</strong> <span style="text-transform:uppercase;">${config.name}</span></p>
+                        <p style="margin:2px 0; color:#003399; font-size:16px; font-weight:bold;">STK: ${config.stk}</p>
+                    </div>
+                    <div style="text-align:center; width:35%;">
+                        <p style="font-style:italic; font-size:13px;">${dStr}</p>
+                        <p style="color:#003399; font-weight:900; font-size:16px; margin:5px 0 70px 0;">GIÁM ĐỐC</p>
+                        <p style="font-weight:bold; text-transform:uppercase; font-size:14px; padding-top:5px; display:inline-block; min-width:180px;">${config.director}</p>
+                    </div>
+                </div>
+                
+                <div style="text-align:center; margin-top:35px; font-style:italic; font-size:12px;">Xin chân thành cảm ơn Quý khách hàng!</div>
+            `;
+        }
 
-                items.forEach((it, idx) => {
-                    tableBody.push([
-                        { text: idx+1, alignment: 'center', margin: [0, 5] },
-                        { text: it.name, bold: true, margin: [0, 5] },
-                        { text: it.unit, alignment: 'center', margin: [0, 5] },
-                        { text: it.qty, alignment: 'center', bold: true, margin: [0, 5] },
-                        { text: it.price.toLocaleString('vi-VN'), alignment: 'right', margin: [0, 5] },
-                        { text: (it.qty*it.price).toLocaleString('vi-VN'), alignment: 'right', bold: true, color: '#003399', margin: [0, 5] }
-                    ]);
-                });
+        function exportNativePDF() {
+            try {
+                const d = new Date(document.getElementById('quote-date').value);
+                const dStr = `Ngày ${d.getDate()} tháng ${d.getMonth()+1} năm ${d.getFullYear()}`;
+                let total = items.reduce((s, i) => s + (i.qty * i.price), 0);
+                
+                let tableBody = [
+                    [
+                        { text: 'STT', style: 'tableHeader' },
+                        { text: 'Tên hàng hóa / Quy cách', style: 'tableHeader', alignment: 'left' },
+                        { text: 'ĐVT', style: 'tableHeader' },
+                        { text: 'SL', style: 'tableHeader' },
+                        { text: 'Đơn giá', style: 'tableHeader', alignment: 'right' },
+                        { text: 'Thành tiền', style: 'tableHeader', alignment: 'right' }
+                    ]
+                ];
 
-                let companyInfoStack = [
-                    { text: config.name, color: '#cc0000', bold: true, fontSize: 13, alignment: 'right', margin: [0, 0, 0, 2] },
-                    { text: `MST: ${config.tax}`, fontSize: 9, alignment: 'right' },
-                    { text: `ĐC: ${config.addr}`, fontSize: 9, alignment: 'right' }
-                ];
-                if(config.branch) companyInfoStack.push({ text: `CN: ${config.branch}`, fontSize: 9, alignment: 'right' });
-                companyInfoStack.push({ text: [{text: 'Tel: ', fontSize: 9}, {text: config.phone, fontSize: 9, color: '#003399', bold: true}], alignment: 'right' });
-                if(config.email) companyInfoStack.push({ text: `Email: ${config.email}`, fontSize: 9, alignment: 'right' });
+                items.forEach((it, idx) => {
+                    // Xử lý ô Tên hàng hóa kết hợp Ghi chú
+                    let nameCellStack = [];
+                    nameCellStack.push({ text: it.name, bold: true });
+                    if (it.note) {
+                        nameCellStack.push({ text: it.note, italics: true, fontSize: 10, color: 'gray', margin: [0, 2, 0, 0] });
+                    }
 
-                const docDefinition = {
-                    pageSize: 'A4',
-                    pageMargins: [40, 40, 40, 40],
-                    content: [
-                        {
-                            columns: [
-                                logoBase64 ? { image: logoBase64, width: 100 } : { text: 'PHƯƠNG THANH', width: 100, color: '#ccc', bold: true, margin: [0, 10, 0, 0] },
-                                { stack: companyInfoStack }
-                            ]
-                        },
-                        { canvas: [{ type: 'line', x1: 0, y1: 5, x2: 515, y2: 5, lineWidth: 2, lineColor: '#cc0000' }], margin: [0, 5, 0, 15] },
-                        
-                        { text: 'BẢNG BÁO GIÁ', color: '#003399', fontSize: 20, bold: true, alignment: 'center', characterSpacing: 1 },
-                        { text: dStr, italics: true, fontSize: 11, alignment: 'center', margin: [0, 0, 0, 20] },
+                    tableBody.push([
+                        { text: idx+1, alignment: 'center', margin: [0, 5] },
+                        { stack: nameCellStack, margin: [0, 5] },
+                        { text: it.unit, alignment: 'center', margin: [0, 5] },
+                        { text: it.qty, alignment: 'center', bold: true, margin: [0, 5] },
+                        { text: it.price.toLocaleString('vi-VN'), alignment: 'right', margin: [0, 5] },
+                        { text: (it.qty*it.price).toLocaleString('vi-VN'), alignment: 'right', bold: true, color: '#003399', margin: [0, 5] }
+                    ]);
+                });
 
-                        { text: 'I. THÔNG TIN KHÁCH HÀNG', color: '#003399', fontSize: 11, bold: true, margin: [0, 0, 0, 5] },
-                        { text: [{text: 'Khách hàng: ', bold: true}, {text: (document.getElementById('cust-name').value || "").toUpperCase()}], fontSize: 11, margin: [0, 2] },
-                        { text: [{text: 'Địa chỉ: ', bold: true}, {text: document.getElementById('cust-addr').value || ""}], fontSize: 11, margin: [0, 2] },
-                        { text: [{text: 'Điện thoại/MST: ', bold: true}, {text: document.getElementById('cust-phone').value || ""}], fontSize: 11, margin: [0, 2, 0, 15] },
+                let companyInfoStack = [
+                    { text: config.name, color: '#cc0000', bold: true, fontSize: 13, alignment: 'right', margin: [0, 0, 0, 2] },
+                    { text: `MST: ${config.tax}`, fontSize: 9, alignment: 'right' },
+                    { text: `ĐC: ${config.addr}`, fontSize: 9, alignment: 'right' }
+                ];
+                if(config.branch) companyInfoStack.push({ text: `CN: ${config.branch}`, fontSize: 9, alignment: 'right' });
+                companyInfoStack.push({ text: [{text: 'Tel: ', fontSize: 9}, {text: config.phone, fontSize: 9, color: '#003399', bold: true}], alignment: 'right' });
+                if(config.email) companyInfoStack.push({ text: `Email: ${config.email}`, fontSize: 9, alignment: 'right' });
 
-                        { text: 'II. CHI TIẾT BÁO GIÁ', color: '#003399', fontSize: 11, bold: true, margin: [0, 0, 0, 5] },
-                        {
-                            table: {
-                                headerRows: 1,
-                                widths: [30, '*', 40, 30, 75, 85],
-                                body: tableBody
-                            },
-                            layout: {
-                                hLineWidth: function (i, node) { return 1; },
-                                vLineWidth: function (i, node) { return 1; },
-                                hLineColor: function (i, node) { return 'black'; },
-                                vLineColor: function (i, node) { return 'black'; }
-                            }
-                        },
+                let custName = document.getElementById('cust-name').value;
+                let custAddr = document.getElementById('cust-addr').value;
+                let custPhone = document.getElementById('cust-phone').value;
 
-                        { text: `TỔNG CỘNG: ${total.toLocaleString('vi-VN')} VNĐ`, color: '#cc0000', fontSize: 15, bold: true, alignment: 'right', margin: [0, 20, 0, 0] },
-                        { text: `(Bằng chữ: ${docTien(total)})`, italics: true, fontSize: 10, color: '#444', alignment: 'right', margin: [0, 2, 0, 20] },
+                const docDefinition = {
+                    pageSize: 'A4',
+                    pageMargins: [40, 40, 40, 40],
+                    content: [
+                        {
+                            columns: [
+                                logoBase64 ? { image: logoBase64, width: 100 } : { text: 'PHƯƠNG THANH', width: 100, color: '#ccc', bold: true, margin: [0, 10, 0, 0] },
+                                { stack: companyInfoStack }
+                            ]
+                        },
+                        { canvas: [{ type: 'line', x1: 0, y1: 5, x2: 515, y2: 5, lineWidth: 2, lineColor: '#cc0000' }], margin: [0, 5, 0, 15] },
+                        
+                        { text: 'BẢNG BÁO GIÁ', color: '#003399', fontSize: 20, bold: true, alignment: 'center', characterSpacing: 1 },
+                        { text: dStr, italics: true, fontSize: 11, alignment: 'center', margin: [0, 0, 0, 20] },
 
-                        {
-                            columns: [
-                                {
-                                    width: '65%',
-                                    stack: [
-                                        { text: 'Ghi chú & Điều khoản:', bold: true, decoration: 'underline', fontSize: 11, margin: [0, 0, 0, 5] },
-                                        {
-                                            ul: [
-                                                `Giá trên đã bao gồm ${config.vat}% VAT.`,
-                                                `Thanh toán trước khi nhận hàng.`,
-                                                `Báo giá có hiệu lực 15 ngày.`
-                                            ],
-                                            fontSize: 11, margin: [0, 0, 0, 10]
-                                        },
-                                        { text: 'Thông tin chuyển khoản:', bold: true, italics: true, fontSize: 11, margin: [0, 0, 0, 2] },
-                                        { text: config.bank, fontSize: 11, margin: [0, 0, 0, 2] },
-                                        { text: [{text: 'Đơn vị thụ hưởng: ', bold: true}, {text: config.name.toUpperCase()}], fontSize: 11, margin: [0, 0, 0, 2] },
-                                        { text: `STK: ${config.stk}`, color: '#003399', bold: true, fontSize: 13 }
-                                    ]
-                                },
-                                {
-                                    width: '35%',
-                                    alignment: 'center',
-                                    stack: [
-                                        { text: dStr, italics: true, fontSize: 11, margin: [0, 0, 0, 5] },
-                                        { text: 'GIÁM ĐỐC', color: '#003399', bold: true, fontSize: 12, margin: [0, 0, 0, 60] },
-                                        { text: config.director, bold: true, fontSize: 12 }
-                                    ]
-                                }
-                            ]
-                        },
-                        { text: 'Xin chân thành cảm ơn Quý khách hàng!', italics: true, fontSize: 10, alignment: 'center', margin: [0, 40, 0, 0] }
-                    ],
-                    styles: { tableHeader: { bold: true, fontSize: 11, color: 'black', fillColor: '#e6f0fa', alignment: 'center', margin: [0, 5] } },
-                    defaultStyle: { font: 'Roboto' }
-                };
+                        { text: 'I. THÔNG TIN KHÁCH HÀNG', color: '#003399', fontSize: 11, bold: true, margin: [0, 0, 0, 5] },
+                        { text: [{text: 'Khách hàng: ', bold: true}, {text: custName.toUpperCase()}], fontSize: 11, margin: [0, 2] },
+                        { text: [{text: 'Địa chỉ: ', bold: true}, {text: custAddr}], fontSize: 11, margin: [0, 2] },
+                        { text: [{text: 'Điện thoại/MST: ', bold: true}, {text: custPhone}], fontSize: 11, margin: [0, 2, 0, 15] },
 
-                let rawName = document.getElementById('cust-name').value || "KhachHang";
-                let safeName = rawName.replace(/[^a-zA-Z0-9\s]/g, "").replace(/\s+/g, "_");
-                let fileName = `BaoGia_${safeName}.pdf`;
+                        { text: 'II. CHI TIẾT BÁO GIÁ', color: '#003399', fontSize: 11, bold: true, margin: [0, 0, 0, 5] },
+                        {
+                            table: {
+                                headerRows: 1,
+                                widths: [30, '*', 40, 30, 75, 85],
+                                body: tableBody
+                            },
+                            layout: {
+                                hLineWidth: function (i, node) { return 1; },
+                                vLineWidth: function (i, node) { return 1; },
+                                hLineColor: function (i, node) { return 'black'; },
+                                vLineColor: function (i, node) { return 'black'; }
+                            }
+                        },
 
-                pdfMake.createPdf(docDefinition).getBlob(function(blob) {
-                    var url = window.URL.createObjectURL(blob);
-                    var a = document.createElement('a');
-                    a.style.display = 'none';
-                    a.href = url;
-                    a.download = fileName;
-                    document.body.appendChild(a);
-                    a.click();
-                    setTimeout(function() {
-                        document.body.removeChild(a);
-                        window.URL.revokeObjectURL(url);
-                    }, 100);
-                });
-            } catch (err) {
-                console.error(err);
-            }
-        }
+                        { text: `TỔNG CỘNG: ${total.toLocaleString('vi-VN')} VNĐ`, color: '#cc0000', fontSize: 15, bold: true, alignment: 'right', margin: [0, 20, 0, 0] },
+                        { text: `(Bằng chữ: ${docTien(total)})`, italics: true, fontSize: 10, color: '#444', alignment: 'right', margin: [0, 2, 0, 20] },
 
-        function uploadLogo(input) {
-            const file = input.files[0];
-            const reader = new FileReader();
-            reader.onload = (e) => { logoBase64 = e.target.result; localStorage.setItem('pt_logo_64', logoBase64); };
-            if(file) reader.readAsDataURL(file);
-        }
-        function showSettings() { ['name','tax','addr','branch','phone','email','bank','stk','vat','director'].forEach(k => { document.getElementById('set-'+k).value = config[k]; }); document.getElementById('modal-settings').classList.remove('hidden'); }
-        function closeSettings() { document.getElementById('modal-settings').classList.add('hidden'); }
-        function saveSettings() { ['name','tax','addr','branch','phone','email','bank','stk','vat','director'].forEach(k => { config[k] = document.getElementById('set-'+k).value; }); localStorage.setItem('pt_config', JSON.stringify(config)); closeSettings(); calculateAll(); }
-        function addItem() { items.push({ id: Date.now(), name: "", unit: "Cái", qty: 1, price: 0 }); renderItems(); calculateAll(); }
-        function removeItem(id) { if(items.length > 1) { items = items.filter(i => i.id !== id); renderItems(); calculateAll(); } }
-        function updateItem(id, f, v) { const i = items.find(x => x.id === id); if(i) { i[f] = f === 'qty' ? (parseFloat(v)||0) : v; calculateAll(); } }
-        function updatePrice(id, v) { const val = parseInt(v.replace(/\D/g, '')) || 0; const i = items.find(x => x.id === id); if(i) { i.price = val; calculateAll(); } }
-        function applyCatalog(id, idx) { if(idx === "") return; const i = items.find(x => x.id === id); i.name = CATALOG[idx].n; i.unit = CATALOG[idx].u; i.price = CATALOG[idx].p; renderItems(); calculateAll(); }
-    </script>
+                        {
+                            columns: [
+                                {
+                                    width: '65%',
+                                    stack: [
+                                        { text: 'Ghi chú & Điều khoản:', bold: true, decoration: 'underline', fontSize: 11, margin: [0, 0, 0, 5] },
+                                        {
+                                            ul: [
+                                                `Giá trên đã bao gồm ${config.vat}% VAT.`,
+                                                `Thanh toán trước khi nhận hàng.`,
+                                                `Báo giá có hiệu lực 15 ngày.`
+                                            ],
+                                            fontSize: 11, margin: [0, 0, 0, 10]
+                                        },
+                                        { text: 'Thông tin chuyển khoản:', bold: true, italics: true, fontSize: 11, margin: [0, 0, 0, 2] },
+                                        { text: config.bank, fontSize: 11, margin: [0, 0, 0, 2] },
+                                        { text: [{text: 'Đơn vị thụ hưởng: ', bold: true}, {text: config.name.toUpperCase()}], fontSize: 11, margin: [0, 0, 0, 2] },
+                                        { text: `STK: ${config.stk}`, color: '#003399', bold: true, fontSize: 13 }
+                                    ]
+                                },
+                                {
+                                    width: '35%',
+                                    alignment: 'center',
+                                    stack: [
+                                        { text: dStr, italics: true, fontSize: 11, margin: [0, 0, 0, 5] },
+                                        { text: 'GIÁM ĐỐC', color: '#003399', bold: true, fontSize: 12, margin: [0, 0, 0, 60] },
+                                        { text: config.director, bold: true, fontSize: 12 }
+                                    ]
+                                }
+                            ]
+                        },
+                        { text: 'Xin chân thành cảm ơn Quý khách hàng!', italics: true, fontSize: 10, alignment: 'center', margin: [0, 40, 0, 0] }
+                    ],
+                    styles: { tableHeader: { bold: true, fontSize: 11, color: 'black', fillColor: '#e6f0fa', alignment: 'center', margin: [0, 5] } },
+                    defaultStyle: { font: 'Roboto' }
+                };
+
+                let rawName = document.getElementById('cust-name').value || "KhachHang";
+                let safeName = rawName.replace(/[^a-zA-Z0-9\s]/g, "").replace(/\s+/g, "_");
+                let fileName = `BaoGia_${safeName}.pdf`;
+
+                pdfMake.createPdf(docDefinition).getBlob(function(blob) {
+                    var url = window.URL.createObjectURL(blob);
+                    var a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = url;
+                    a.download = fileName;
+                    document.body.appendChild(a);
+                    a.click();
+                    setTimeout(function() {
+                        document.body.removeChild(a);
+                        window.URL.revokeObjectURL(url);
+                    }, 100);
+                });
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function uploadLogo(input) {
+            const file = input.files[0];
+            const reader = new FileReader();
+            reader.onload = (e) => { logoBase64 = e.target.result; localStorage.setItem('pt_logo_64', logoBase64); };
+            if(file) reader.readAsDataURL(file);
+        }
+        function showSettings() { ['name','tax','addr','branch','phone','email','bank','stk','vat','director'].forEach(k => { document.getElementById('set-'+k).value = config[k]; }); document.getElementById('modal-settings').classList.remove('hidden'); }
+        function closeSettings() { document.getElementById('modal-settings').classList.add('hidden'); }
+        function saveSettings() { ['name','tax','addr','branch','phone','email','bank','stk','vat','director'].forEach(k => { config[k] = document.getElementById('set-'+k).value; }); localStorage.setItem('pt_config', JSON.stringify(config)); closeSettings(); calculateAll(); }
+        function addItem() { items.push({ id: Date.now(), name: "", note: "", unit: "Cái", qty: 1, price: 0 }); renderItems(); calculateAll(); }
+        function removeItem(id) { if(items.length > 1) { items = items.filter(i => i.id !== id); renderItems(); calculateAll(); } }
+        function updateItem(id, f, v) { const i = items.find(x => x.id === id); if(i) { i[f] = f === 'qty' ? (parseFloat(v)||0) : v; calculateAll(); } }
+        function updatePrice(id, v) { const val = parseInt(v.replace(/\D/g, '')) || 0; const i = items.find(x => x.id === id); if(i) { i.price = val; calculateAll(); } }
+        function applyCatalog(id, idx) { if(idx === "") return; const i = items.find(x => x.id === id); i.name = CATALOG[idx].n; i.unit = CATALOG[idx].u; i.price = CATALOG[idx].p; renderItems(); calculateAll(); }
+    </script>
 </body>
 </html>
