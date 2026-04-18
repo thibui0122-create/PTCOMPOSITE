@@ -33,6 +33,14 @@
     <div id="edit-mode" class="max-w-4xl mx-auto p-4 space-y-6">
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
             <h3 class="text-blue-700 font-black text-xs uppercase mb-4 border-b pb-2 tracking-widest"><i class="fa-solid fa-user-tag"></i> I. Thông tin khách hàng</h3>
+            
+            <div class="mb-4">
+                <label class="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Chọn nhanh khách hàng:</label>
+                <select id="quick-customer" onchange="applyCustomer(this.value)" class="w-full border p-2.5 rounded-xl bg-blue-50 border-blue-200 font-bold text-blue-800 outline-none cursor-pointer">
+                    <option value="">-- Click để chọn từ danh sách khách hàng --</option>
+                </select>
+            </div>
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <input type="text" id="cust-name" placeholder="Tên khách hàng" class="w-full border p-2.5 rounded-xl font-bold uppercase border-slate-200 focus:ring-2 focus:ring-blue-100 outline-none">
                 <input type="date" id="quote-date" class="w-full border p-2.5 rounded-xl border-slate-200 outline-none">
@@ -111,16 +119,18 @@
             { n: "Lọc nhớt", u: "Cái", p: 1050000 },
             { n: "Công thợ thay nhớt/bảo trì", u: "Công", p: 1200000 }
         ];
+
         const CUSTOMERS = [
             { n: "CÔNG TY TNHH WATERWORLD VIỆT NAM", m: "4201976247", a: "" },
             { n: "CÔNG TY TNHH MỘT THÀNH VIÊN THƯƠNG MẠI DU LỊCH MINH HUY PHÚ QUỐC", m: "1701961405", a: "" },
             { n: "CÔNG TY CỔ PHẦN THƯƠNG MẠI VÀ DỊCH VỤ QUỐC TẾ ĐẠI VIỆT - CHI NHÁNH ADAVIGO PHÚ QUỐC", m: "0108008526-001", a: "" },
-            { n: "CÔNG TY TNHH BẤT ĐỘNG SẢN BÌNH AN 247", m: "1702146989", a: "Tầng 2, tòa nhà Sun Home Phú Quốc, khu phố 6, Đặc khu Phú Quốc, Tỉnh An Giang" },
+            { n: "CÔNG TY TNHH BẤT ĐỘNG SẢN BÌNH AN 247", m: "1702146989", a: "Tầng 2, tòa nhà Sun Home Phú Quốc, khu phố 6, Đặc khu Phú Quốc, Tỉnh An Giang, Việt Nam" },
             { n: "CÔNG TY TNHH THƯƠNG MẠI DỊCH VỤ SONG LAM", m: "0102195284", a: "" },
             { n: "CÔNG TY TNHH IMES VIỆT NAM", m: "0201141064", a: "" },
             { n: "CÔNG TY CỔ PHẦN NĂNG LƯỢNG VPL", m: "1301026028", a: "" },
             { n: "CÔNG TY TNHH UNIVERSAL GROUP", m: "4201746067", a: "" },
             { n: "Khách Hàng Lẻ", m: "", a: "" }
+        ];
 
         let config = {};
         try {
@@ -140,17 +150,34 @@
         } catch(e) { console.error("Lỗi config"); }
         
         let logoBase64 = localStorage.getItem('pt_logo_64') || "";
-        // Thêm trường "note" vào dữ liệu mặc định
         let items = [{ id: 1, name: "Nhớt 4 thì - can 4 lít", note: "", unit: "Can", qty: 4, price: 700000 }];
 
         window.onload = () => {
             document.getElementById('quote-date').value = new Date().toISOString().split('T')[0];
+            
+            // Đổ danh sách khách hàng vào select box
+            const customerSelect = document.getElementById('quick-customer');
+            CUSTOMERS.forEach((cust, index) => {
+                const opt = document.createElement('option');
+                opt.value = index;
+                opt.textContent = cust.n;
+                customerSelect.appendChild(opt);
+            });
+
             renderItems(); calculateAll();
             
             if (/Zalo/i.test(navigator.userAgent)) {
                 document.getElementById('zalo-warning').classList.remove('hidden');
             }
         };
+
+        function applyCustomer(index) {
+            if(index === "") return;
+            const cust = CUSTOMERS[index];
+            document.getElementById('cust-name').value = cust.n;
+            document.getElementById('cust-phone').value = cust.m;
+            document.getElementById('cust-addr').value = cust.a;
+        }
 
         function renderItems() {
             const list = document.getElementById('items-list');
@@ -320,7 +347,6 @@
                 ];
 
                 items.forEach((it, idx) => {
-                    // Xử lý ô Tên hàng hóa kết hợp Ghi chú
                     let nameCellStack = [];
                     nameCellStack.push({ text: it.name, bold: true });
                     if (it.note) {
