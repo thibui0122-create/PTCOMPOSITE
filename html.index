@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Báo Giá Pro - VARUNA & PHƯƠNG THANH</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap');
+        body { font-family: 'Roboto', sans-serif; background-color: #f1f5f9; margin: 0; padding: 0; }
+        .a4-page { width: 210mm; min-height: 296mm; padding: 12mm 15mm; margin: 20px auto; background: white; box-shadow: 0 0 20px rgba(0,0,0,0.15); color: black; }
+        .table-custom { width: 100%; border-collapse: collapse; border: 1px solid black; }
+        .table-custom th, .table-custom td { border: 1px solid black !important; padding: 7px 8px; font-size: 13px; color: black; }
+        .table-custom th { background-color: #e6f0fa !important; font-weight: bold; text-align: center; }
+        .input-clean { border: none; border-bottom: 1px solid #e2e8f0; outline: none; width: 100%; padding: 4px; background: transparent; transition: border-color 0.2s; }
+        .input-clean:focus { border-bottom: 2px solid #2563eb; }
+    </style>
+</head>
+<body class="text-slate-900">
+
+    <nav class="bg-indigo-950 text-white p-3 sticky top-0 z-50 shadow-xl flex justify-between items-center px-4">
+        <div class="font-bold text-xs uppercase tracking-widest">VARUNA MARINE & PHƯƠNG THANH</div>
+        <div class="flex gap-2">
+            <button onclick="showSettings()" class="bg-indigo-800 px-3 py-1.5 rounded text-[10px] font-bold uppercase">⚙️ Cài đặt</button>
+            <button onclick="toggleView('edit')" id="btn-back" class="hidden bg-slate-600 px-3 py-1.5 rounded text-[10px] font-bold uppercase">Sửa dữ liệu</button>
+            <button onclick="toggleView('preview')" id="btn-go-preview" class="bg-blue-600 hover:bg-blue-500 px-4 py-1.5 rounded text-[10px] font-black uppercase shadow-lg">Xem & Xuất PDF</button>
+        </div>
+    </nav>
+
+    <div id="edit-mode" class="max-w-4xl mx-auto p-4 space-y-6">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+            <h3 class="text-blue-700 font-black text-xs uppercase mb-4 border-b pb-2 tracking-widest"><i class="fa-solid fa-user-tag"></i> I. Thông tin khách hàng</h3>
+            <div class="mb-4">
+                <label class="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Chọn nhanh khách hàng:</label>
+                <select id="quick-customer" onchange="applyCustomer(this.value)" class="w-full border p-2.5 rounded-xl bg-blue-50 border-blue-200 font-bold text-blue-800 outline-none cursor-pointer">
+                    <option value="">-- Click để chọn khách hàng --</option>
+                </select>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input type="text" id="cust-name" placeholder="Tên khách hàng" class="w-full border p-2.5 rounded-xl font-bold uppercase border-slate-200 focus:ring-2 focus:ring-blue-100 outline-none">
+                <input type="date" id="quote-date" class="w-full border p-2.5 rounded-xl border-slate-200 outline-none">
+                <input type="text" id="cust-addr" placeholder="Địa chỉ..." class="w-full border p-2.5 rounded-xl border-slate-200 md:col-span-2 outline-none">
+                <input type="text" id="cust-phone" placeholder="Điện thoại / MST..." class="w-full border p-2.5 rounded-xl border-slate-200 md:col-span-2 outline-none">
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="p-4 bg-slate-50 border-b flex justify-between items-center px-6">
+                <h3 class="text-blue-700 font-black text-xs uppercase">II. Chi tiết hàng hóa</h3>
+                <button onclick="addItem()" class="bg-indigo-600 text-white px-4 py-1.5 rounded-xl text-xs font-bold shadow-md">+ Thêm dòng mới</button>
+            </div>
+            <div id="items-list" class="p-6 space-y-4"></div>
+            <div class="p-8 bg-indigo-50/30 border-t space-y-3 text-right">
+                <span class="text-red-600 font-black text-xl uppercase mr-6">Tổng thanh toán:</span>
+                <span id="sum-total" class="text-4xl font-black text-blue-700">0</span>
+                <span class="text-blue-700 font-black ml-1 text-sm uppercase">VNĐ</span>
+                <p id="sum-words" class="text-[12px] italic text-slate-500 font-bold mt-2"></p>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+            <div class="flex justify-between items-center mb-4 border-b pb-2">
+                <h3 class="text-blue-700 font-black text-xs uppercase tracking-widest"><i class="fa-solid fa-clock-rotate-left"></i> III. Lịch sử báo giá đã xuất</h3>
+                <button onclick="clearHistory()" class="text-[10px] text-red-500 font-bold uppercase hover:underline">Xóa tất cả</button>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead>
+                        <tr class="text-slate-400 border-b">
+                            <th class="py-2">Ngày</th>
+                            <th>Khách hàng</th>
+                            <th class="text-right">Tổng tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-list">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="preview-mode" class="hidden bg-slate-300 py-10 min-h-screen">
+        <div class="max-w-[210mm] mx-auto mb-8 px-4">
+            <button onclick="exportNativePDF()" class="w-full bg-red-600 hover:bg-red-700 text-white py-4 rounded-2xl font-black uppercase shadow-xl text-lg flex items-center justify-center">
+                <i class="fa-solid fa-download mr-3"></i> TẢI THẲNG PDF VỀ MÁY
+            </button>
+        </div>
+        <div id="preview-a4" class="a4-page mx-auto shadow-2xl">
+            <div id="preview-content"></div>
+        </div>
+    </div>
+
+    <div id="modal-settings" class="fixed inset-0 bg-black/60 hidden z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden font-bold">
+            <div class="bg-indigo-950 text-white p-5 flex justify-between uppercase text-[10px] tracking-widest"><span>Cấu hình công ty</span><button onclick="closeSettings()">&times;</button></div>
+            <div class="p-6 space-y-3 text-sm bg-slate-50 overflow-y-auto max-h-[70vh]">
+                <input type="text" id="set-name" placeholder="Tên Công Ty" class="w-full border p-2 rounded shadow-sm">
+                <input type="text" id="set-tax" placeholder="MST">
+                <input type="text" id="set-addr" placeholder="Trụ sở">
+                <input type="text" id="set-branch" placeholder="Chi nhánh">
+                <input type="text" id="set-phone" placeholder="SĐT">
+                <input type="text" id="set-email" placeholder="Email">
+                <textarea id="set-bank" placeholder="Ngân hàng" rows="2" class="w-full border p-2 rounded"></textarea>
+                <input type="text" id="set-stk" placeholder="STK">
+                <input type="text" id="set-director" placeholder="Giám đốc">
+            </div>
+            <div class="p-5 bg-white text-right border-t"><button onclick="saveSettings()" class="bg-blue-700 text-white px-8 py-2 rounded-lg font-black text-xs uppercase">Cập nhật</button></div>
+        </div>
+    </div>
+
+    <script>
+        // LOGO MẶC ĐỊNH TRỰC TIẾP
+        const LOGO_VARUNA = "https://i.ibb.co/LzrVfV6/logo-varuna.jpg";
+
+        const CATALOG = [
+            { n: "Nhớt động cơ máy 2 thì", u: "Can", p: 530000 },
+            { n: "Nhớt động cơ máy 4 thì", u: "Can", p: 683333 },
+            { n: "Nhớt 4 thì - can 4 lít", u: "Can", p: 700000 },
+            { n: "Cánh bơm nước", u: "Cái", p: 850000 },
+            { n: "Bugi - 4 thì", u: "Cái", p: 240000 },
+            { n: "Lọc xăng ngoài", u: "Cái", p: 1500000 },
+            { n: "Lọc nhớt", u: "Cái", p: 1050000 }
+        ];
+
+        const CUSTOMERS = [
+            { n: "CÔNG TY TNHH WATERWORLD VIỆT NAM", m: "4201976247", a: "" },
+            { n: "CÔNG TY TNHH UNIVERSAL GROUP", m: "4201746067", a: "" },
+            { n: "CÔNG TY TNHH BẤT ĐỘNG SẢN BÌNH AN 247", m: "1702146989", a: "Tầng 2, tòa nhà Sun Home Phú Quốc, khu phố 6, Đặc khu Phú Quốc, Tỉnh An Giang" },
+            { n: "Khách Hàng Lẻ", m: "", a: "" }
+        ];
+
+        let config = {};
+        let items = [{ id: 1, name: "Nhớt 4 thì - can 4 lít", note: "", unit: "Can", qty: 1, price: 700000 }];
+        let history = JSON.parse(localStorage.getItem('pt_history')) || [];
+
+        window.onload = () => {
+            // Cấu hình mặc định
+            let savedConfig = JSON.parse(localStorage.getItem('pt_config')) || {};
+            config = {
+                name: savedConfig.name || "CÔNG TY TNHH MTV PHƯƠNG THANH COMPOSITE",
+                tax: savedConfig.tax || "1702233007",
+                addr: savedConfig.addr || "506A, Ấp Tân Phước, Xã Châu Thành, Tỉnh An Giang",
+                branch: savedConfig.branch || "Phú Quốc, Kiên Giang",
+                phone: savedConfig.phone || "0949.878.208",
+                email: savedConfig.email || "phuongthanhcomposite@gmail.com",
+                bank: savedConfig.bank || "Ngân hàng MB - chi nhánh Rạch Giá",
+                stk: savedConfig.stk || "242666686868",
+                director: savedConfig.director || "BÙI NHỰT PHƯƠNG",
+                vat: 10
+            };
+
+            const cSelect = document.getElementById('quick-customer');
+            CUSTOMERS.forEach((c, i) => {
+                let opt = document.createElement('option');
+                opt.value = i; opt.text = c.n;
+                cSelect.appendChild(opt);
+            });
+
+            document.getElementById('quote-date').value = new Date().toISOString().split('T')[0];
+            renderItems(); renderHistory(); calculateAll();
+        };
+
+        function renderHistory() {
+            const list = document.getElementById('history-list');
+            list.innerHTML = history.length ? history.map(h => `
+                <tr class="border-b hover:bg-slate-50 transition-colors">
+                    <td class="py-2 text-slate-500">${h.date}</td>
+                    <td class="font-bold uppercase">${h.name}</td>
+                    <td class="text-right font-black text-blue-700">${h.total} đ</td>
+                </tr>
+            `).reverse().join('') : '<tr><td colspan="3" class="py-4 text-center text-slate-300 italic">Chưa có lịch sử báo giá</td></tr>';
+        }
+
+        function addToHistory() {
+            const name = document.getElementById('cust-name').value || "Khách lẻ";
+            const total = document.getElementById('sum-total').innerText;
+            const date = new Date().toLocaleDateString('vi-VN');
+            
+            // Chỉ lưu nếu khách hàng có tên và tổng tiền khác 0
+            if(total !== "0") {
+                history.push({ name, total, date });
+                if(history.length > 20) history.shift(); // Giữ tối đa 20 bản ghi gần nhất
+                localStorage.setItem('pt_history', JSON.stringify(history));
+                renderHistory();
+            }
+        }
+
+        function clearHistory() {
+            if(confirm("Xóa toàn bộ lịch sử báo giá?")) {
+                history = [];
+                localStorage.removeItem('pt_history');
+                renderHistory();
+            }
+        }
+
+        function toggleView(mode) {
+            if(mode === 'preview') {
+                syncPreview();
+                addToHistory(); // Tự động lưu lịch sử khi nhấn xem
+            }
+            document.getElementById('edit-mode').classList.toggle('hidden', mode === 'preview');
+            document.getElementById('preview-mode').classList.toggle('hidden', mode === 'edit');
+            document.getElementById('btn-go-preview').classList.toggle('hidden', mode === 'preview');
+            document.getElementById('btn-back').classList.toggle('hidden', mode === 'edit');
+        }
+
+        // --- Các hàm Core xử lý dữ liệu ---
+        function renderItems() {
+            const list = document.getElementById('items-list');
+            list.innerHTML = items.map(item => `
+                <div class="border border-slate-200 p-4 rounded-2xl bg-white relative shadow-sm">
+                    <button onclick="removeItem(${item.id})" class="absolute top-1 right-2 text-red-400 font-bold">×</button>
+                    <div class="grid grid-cols-12 gap-3">
+                        <select onchange="applyCatalog(${item.id}, this.value)" class="col-span-12 text-[10px] font-bold text-blue-700 bg-blue-50 p-1 rounded">
+                            <option value="">-- Chọn hàng mẫu --</option>
+                            ${CATALOG.map((c, i) => `<option value="${i}">${c.n}</option>`).join('')}
+                        </select>
+                        <input type="text" value="${item.name}" oninput="updateItem(${item.id}, 'name', this.value)" class="col-span-12 md:col-span-5 input-clean font-bold" placeholder="Tên hàng">
+                        <input type="text" value="${item.unit}" oninput="updateItem(${item.id}, 'unit', this.value)" class="col-span-4 md:col-span-2 input-clean text-center" placeholder="ĐVT">
+                        <input type="number" value="${item.qty}" oninput="updateItem(${item.id}, 'qty', this.value)" class="col-span-3 md:col-span-2 input-clean text-center font-black">
+                        <input type="text" value="${item.price.toLocaleString('vi-VN')}" oninput="updatePrice(${item.id}, this.value)" class="col-span-5 md:col-span-3 input-clean text-right font-black">
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function calculateAll() {
+            let total = items.reduce((s, i) => s + (i.qty * i.price), 0);
+            document.getElementById('sum-total').innerText = total.toLocaleString('vi-VN');
+            document.getElementById('sum-words').innerText = "(Bằng chữ: " + docTien(total) + ")";
+        }
+
+        function syncPreview() {
+            const d = new Date(document.getElementById('quote-date').value);
+            const dStr = `Ngày ${d.getDate()} tháng ${d.getMonth()+1} năm ${d.getFullYear()}`;
+            let total = items.reduce((s, i) => s + (i.qty * i.price), 0);
+            
+            document.getElementById('preview-content').innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:15px;">
+                    <div style="width:140px;"><img src="${LOGO_VARUNA}" style="width:100%;"></div>
+                    <div style="text-align:right; font-size:11px; line-height:1.4;">
+                        <h2 style="color:#cc0000; font-size:16px; font-weight:900; margin:0; text-transform:uppercase;">${config.name}</h2>
+                        <p style="margin:2px 0;">MST: <strong>${config.tax}</strong></p>
+                        <p style="margin:0;">ĐC: ${config.addr}</p>
+                        <p style="margin:2px 0;">CN: ${config.branch}</p>
+                        <p style="margin:0;">Tel: <span style="color:#003399; font-weight:bold;">${config.phone}</span> | Email: ${config.email}</p>
+                    </div>
+                </div>
+                <div style="border-top:2.5px solid #cc0000; margin-bottom:15px;"></div>
+                <h1 style="text-align:center; color:#003399; font-size:24px; font-weight:900; margin:0;">BẢNG BÁO GIÁ</h1>
+                <p style="text-align:center; font-style:italic; font-size:12px; margin-bottom:20px;">${dStr}</p>
+                <div style="font-size:14px; margin-bottom:15px;">
+                    <p><strong>Khách hàng:</strong> <span style="text-transform:uppercase;">${document.getElementById('cust-name').value}</span></p>
+                    <p><strong>Địa chỉ:</strong> ${document.getElementById('cust-addr').value}</p>
+                </div>
+                <table class="table-custom">
+                    <thead><tr><th>STT</th><th>Tên hàng hóa</th><th>ĐVT</th><th>SL</th><th>Đơn giá</th><th>Thành tiền</th></tr></thead>
+                    <tbody>
+                        ${items.map((it, idx) => `<tr><td style="text-align:center;">${idx+1}</td><td style="font-weight:bold;">${it.name}</td><td style="text-align:center;">${it.unit}</td><td style="text-align:center; font-weight:bold;">${it.qty}</td><td style="text-align:right;">${it.price.toLocaleString()}</td><td style="text-align:right; font-weight:bold; color:#003399;">${(it.qty*it.price).toLocaleString()}</td></tr>`).join('')}
+                    </tbody>
+                </table>
+                <div style="text-align:right; margin:20px 0;">
+                    <h3 style="color:#cc0000; font-size:18px; font-weight:900; margin:0;">TỔNG CỘNG: ${total.toLocaleString()} VNĐ</h3>
+                    <p style="font-style:italic; font-size:12px;">(Bằng chữ: ${docTien(total)})</p>
+                </div>
+                <div style="margin-top:20px; border:1px solid #ccc; padding:10px; font-size:12px; line-height:1.6;">
+                    <p style="font-weight:bold; text-decoration:underline;">Ghi chú & Điều khoản:</p>
+                    <p>- Giá trên đã bao gồm 10% VAT.</p>
+                    <p>- Thanh toán trước khi nhận hàng.</p>
+                    <p><strong>Thông tin chuyển khoản:</strong> ${config.bank} - STK: <span style="color:#cc0000; font-weight:900;">${config.stk}</span></p>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-top:30px; text-align:center;">
+                    <div style="width:40%;"></div>
+                    <div style="width:40%;">
+                        <p style="font-weight:bold; color:#003399;">GIÁM ĐỐC</p>
+                        <br><br><br>
+                        <p style="font-weight:bold; text-transform:uppercase;">${config.director}</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Các hàm phụ trợ (CRUD)
+        function addItem() { items.push({ id: Date.now(), name: "", note: "", unit: "Cái", qty: 1, price: 0 }); renderItems(); calculateAll(); }
+        function removeItem(id) { if(items.length > 1) { items = items.filter(i => i.id !== id); renderItems(); calculateAll(); } }
+        function updateItem(id, f, v) { const i = items.find(x => x.id === id); if(i) { i[f] = f === 'qty' ? (parseFloat(v)||0) : v; calculateAll(); } }
+        function updatePrice(id, v) { const val = parseInt(v.replace(/\D/g, '')) || 0; const i = items.find(x => x.id === id); if(i) { i.price = val; calculateAll(); } }
+        function applyCatalog(id, idx) { if(idx === "") return; const i = items.find(x => x.id === id); i.name = CATALOG[idx].n; i.unit = CATALOG[idx].u; i.price = CATALOG[idx].p; renderItems(); calculateAll(); }
+        function applyCustomer(idx) { if(idx === "") return; const c = CUSTOMERS[idx]; document.getElementById('cust-name').value = c.n; document.getElementById('cust-phone').value = c.m; document.getElementById('cust-addr').value = c.a; }
+        function showSettings() { ['name','tax','addr','branch','phone','email','bank','stk','director'].forEach(k => { document.getElementById('set-'+k).value = config[k]; }); document.getElementById('modal-settings').classList.remove('hidden'); }
+        function closeSettings() { document.getElementById('modal-settings').classList.add('hidden'); }
+        function saveSettings() { ['name','tax','addr','branch','phone','email','bank','stk','director'].forEach(k => { config[k] = document.getElementById('set-'+k).value; }); localStorage.setItem('pt_config', JSON.stringify(config)); closeSettings(); }
+        function docTien(so) {
+            if (so === 0) return "Không đồng";
+            const chuSo = ["không", "một", "hai", "ba", "bốn", "năm", "sáu", "bảy", "tám", "chín"];
+            const hang = ["", "nghìn", "triệu", "tỷ"];
+            function doc3(n, isFirst) {
+                let tr = Math.floor(n/100), ch = Math.floor((n%100)/10), dv = n%10, s = "";
+                if (tr>0 || !isFirst) s += chuSo[tr] + " trăm ";
+                if (ch==0 && dv!=0 && s!=="") s += " linh ";
+                if (ch==1) s += " mười "; else if (ch>1) s += chuSo[ch] + " mươi ";
+                if (dv>0) { if (dv==1 && ch>1) s += " mốt "; else if (dv==5 && ch>0) s += " lăm "; else s += chuSo[dv] + " "; }
+                return s;
+            }
+            let res = "", i = 0, temp = Math.abs(so);
+            do { let lop = temp % 1000; if (lop > 0) { let s = doc3(lop, temp < 1000); res = s + hang[i] + " " + res; } temp = Math.floor(temp / 1000); i++; } while (temp > 0);
+            return res.trim().charAt(0).toUpperCase() + res.trim().slice(1) + " đồng chẵn.";
+        }
+    </script>
+</body>
+</html>
